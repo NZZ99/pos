@@ -9,18 +9,22 @@ import {
   Receipt,
   CreditCard,
   Filter,
+  FileSpreadsheet,
+  Download,
 } from 'lucide-react';
 
 interface ReportsTabProps {
   salesList: SaleRecord[];
   onOpenVoucher: (sale: SaleRecord) => void;
   onDeleteSale: (id: string) => void;
+  onExportExcel?: () => void;
 }
 
 export const ReportsTab: React.FC<ReportsTabProps> = ({
   salesList,
   onOpenVoucher,
   onDeleteSale,
+  onExportExcel,
 }) => {
   const [periodFilter, setPeriodFilter] = useState<TimePeriodFilter>('today');
   const [searchTerm, setSearchTerm] = useState('');
@@ -98,6 +102,18 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             တစ်ရက်စာ၊ တစ်ပတ်စာ၊ တစ်လစာ စာရင်းများကို သီးခြားခွဲခြား ကြည့်ရှုစစ်ဆေးနိုင်ပါသည်။
           </p>
         </div>
+
+        {onExportExcel && (
+          <button
+            onClick={onExportExcel}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm border border-emerald-500 hover:shadow-md"
+            title="အရောင်းမှတ်တမ်း အစီရင်ခံစာများကို Excel (.xlsx) ဖိုင်အဖြစ် ဒေါင်းလုဒ်ဆွဲမည်"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+            <span>Excel (.xlsx) ဒေါင်းလုဒ်ဆွဲရန်</span>
+            <Download className="w-3.5 h-3.5 text-emerald-200" />
+          </button>
+        )}
       </div>
 
       {/* Filter Tabs: တစ်ရက်စာ / တစ်ပတ်စာ / တစ်လစာ / အားလုံး */}

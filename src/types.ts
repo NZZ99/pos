@@ -61,3 +61,12 @@ export interface ShopInfo {
   phone: string;
   voucherNote: string;
 }
+
+export interface TabLabels {
+  pos: string;
+  products: string;
+  stockIn: string;
+  inventory: string;
+  reports: string;
+  settings: string;
+}

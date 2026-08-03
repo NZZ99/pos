@@ -5,21 +5,37 @@ import {
   initialSales,
   initialShopInfo,
 } from './data/initialData';
-import { Product, StockInRecord, SaleRecord, ShopInfo } from './types';
+import { Product, StockInRecord, SaleRecord, ShopInfo, TabLabels } from './types';
 import { Navbar } from './components/Navbar';
 import { POSTab } from './components/POSTab';
 import { ProductsTab } from './components/ProductsTab';
 import { StockInTab } from './components/StockInTab';
 import { ReportsTab } from './components/ReportsTab';
 import { InventoryTab } from './components/InventoryTab';
+import { SettingsTab } from './components/SettingsTab';
 import { VoucherModal } from './components/VoucherModal';
 import { ShopInfoModal } from './components/ShopInfoModal';
+import { exportPOSToExcel } from './utils/excelExporter';
+
+const DEFAULT_TAB_LABELS: TabLabels = {
+  pos: '🛒 POS အရောင်း',
+  products: '📦 ပစ္စည်းမော်ဒယ်ဇယား',
+  stockIn: '📥 ပစ္စည်းအဝင်စာရင်း',
+  inventory: '🧊 စတော့ကျန် စာရင်း',
+  reports: '📊 အရောင်း အစီရင်ခံစာ',
+  settings: '⚙️ ပြင်ဆင်ရန်',
+};
 
 export default function App() {
   // Persistence via localStorage
   const [shopInfo, setShopInfo] = useState<ShopInfo>(() => {
     const saved = localStorage.getItem('cs_pos_v5_shop');
     return saved ? JSON.parse(saved) : initialShopInfo;
+  });
+
+  const [tabLabels, setTabLabels] = useState<TabLabels>(() => {
+    const saved = localStorage.getItem('cs_pos_v5_tablabels');
+    return saved ? JSON.parse(saved) : DEFAULT_TAB_LABELS;
   });
 
   const [products, setProducts] = useState<Product[]>(() => {
@@ -48,6 +64,10 @@ export default function App() {
   }, [shopInfo]);
 
   useEffect(() => {
+    localStorage.setItem('cs_pos_v5_tablabels', JSON.stringify(tabLabels));
+  }, [tabLabels]);
+
+  useEffect(() => {
     localStorage.setItem('cs_pos_v5_products', JSON.stringify(products));
   }, [products]);
 
@@ -62,6 +82,11 @@ export default function App() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleExportExcel = () => {
+    exportPOSToExcel(products, stockInList, salesList, shopInfo, 'POS_Sales_Report.xlsx');
+    showToast('Excel အစီရင်ခံစာ (.xlsx) ဒေါင်းလုဒ်ဆွဲပြီးပါပြီ။');
   };
 
   // Products handlers
@@ -126,6 +151,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         shopInfo={shopInfo}
         onOpenShopInfo={() => setIsShopInfoOpen(true)}
+        tabLabels={tabLabels}
       />
 
       {/* Main Content Area */}
@@ -157,19 +183,35 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'reports' && (
-          <ReportsTab
-            salesList={salesList}
-            onOpenVoucher={(sale) => setActiveVoucher(sale)}
-            onDeleteSale={handleDeleteSale}
-          />
-        )}
-
         {activeTab === 'inventory' && (
           <InventoryTab
             products={products}
             stockInList={stockInList}
             salesList={salesList}
+          />
+        )}
+
+        {activeTab === 'reports' && (
+          <ReportsTab
+            salesList={salesList}
+            onOpenVoucher={(sale) => setActiveVoucher(sale)}
+            onDeleteSale={handleDeleteSale}
+            onExportExcel={handleExportExcel}
+          />
+        )}
+
+        {activeTab === 'settings' && (
+          <SettingsTab
+            shopInfo={shopInfo}
+            onSaveShopInfo={(newInfo) => {
+              setShopInfo(newInfo);
+              showToast('ဆိုင်အချက်အလက်များ သိမ်းဆည်းပြီးပါပြီ။');
+            }}
+            tabLabels={tabLabels}
+            onSaveTabLabels={(newLabels) => {
+              setTabLabels(newLabels);
+              showToast('Tab အမည်များကို အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။');
+            }}
           />
         )}
       </main>

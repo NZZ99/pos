@@ -133,24 +133,25 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               </div>
             </div>
 
-            {/* Itemized Receipt Table (80mm format) */}
+            {/* Itemized Receipt Table (80mm Thermal optimized layout) */}
             <div className="py-2.5 border-b border-dashed border-slate-400">
-              <div className="flex justify-between font-bold text-[11px] text-slate-800 border-b border-slate-300 pb-1 mb-1">
-                <span className="w-1/2 text-left">ပစ္စည်း / Batch</span>
-                <span className="w-1/4 text-right">အလေးချိန်</span>
-                <span className="w-1/4 text-right">ကျသင့်ငွေ</span>
+              <div className="flex justify-between font-bold text-[11px] text-slate-800 border-b border-slate-300 pb-1 mb-1.5">
+                <span className="w-7/12 text-left">ပစ္စည်း / အသေးစိတ်</span>
+                <span className="w-5/12 text-right pr-3">ကျသင့်ငွေ</span>
               </div>
-              <div className="space-y-1.5 text-[11px]">
+              <div className="space-y-2 text-[11px]">
                 {sale.items.map((item, idx) => (
                   <div key={idx} className="space-y-0.5">
-                    <div className="font-semibold text-slate-950 flex justify-between">
-                      <span className="truncate pr-1">{item.productName}</span>
-                      <span className="shrink-0">{item.totalAmount.toLocaleString()}</span>
+                    <div className="font-semibold text-slate-950 flex justify-between items-start">
+                      <span className="w-7/12 text-left leading-tight pr-1 break-words">{item.productName}</span>
+                      <span className="w-5/12 text-right font-bold pr-3 shrink-0 text-slate-900">
+                        {item.totalAmount.toLocaleString()}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-[10px] text-slate-600">
+                    <div className="text-[10px] text-slate-600 pl-0.5">
                       <span>
-                        {item.weightKg} KG x {item.pricePerKg.toLocaleString()}
-                        {item.batchId ? ` [${item.batchId}]` : ''}
+                        {item.weightKg} KG x {item.pricePerKg.toLocaleString()} ကျပ်
+                        {item.batchId ? ` [Batch: ${item.batchId}]` : ''}
                       </span>
                     </div>
                   </div>
@@ -160,33 +161,29 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
 
             {/* Totals & Calculations */}
             <div className="py-2.5 space-y-1 text-[11px] text-slate-800 border-b border-dashed border-slate-400">
-              <div className="flex justify-between">
-                <span className="text-slate-600">စုစုပေါင်း အလေးချိန်:</span>
-                <span className="font-bold">{sale.totalWeightKg.toLocaleString()} KG</span>
-              </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between pr-3">
                 <span className="text-slate-600">ကျသင့်ငွေ စုစုပေါင်း:</span>
-                <span>{sale.subtotal.toLocaleString()} ကျပ်</span>
+                <span className="font-semibold">{sale.subtotal.toLocaleString()} ကျပ်</span>
               </div>
               {sale.discount > 0 && (
-                <div className="flex justify-between text-emerald-800 font-medium">
+                <div className="flex justify-between text-emerald-800 font-medium pr-3">
                   <span>လျှော့ဈေး (Discount):</span>
                   <span>- {sale.discount.toLocaleString()} ကျပ်</span>
                 </div>
               )}
-              <div className="flex justify-between items-center pt-1.5 text-sm font-bold text-slate-950 border-t border-slate-800">
+              <div className="flex justify-between items-center pt-1.5 text-xs sm:text-sm font-bold text-slate-950 border-t border-slate-800 pr-3">
                 <span>အသားတင် ကျသင့်ငွေ:</span>
-                <span>{sale.grandTotal.toLocaleString()} ကျပ်</span>
+                <span className="text-indigo-950 font-extrabold">{sale.grandTotal.toLocaleString()} ကျပ်</span>
               </div>
 
               {sale.cashReceived !== undefined && sale.cashReceived > 0 && (
                 <div className="pt-1.5 text-[11px] space-y-0.5 text-slate-700 border-t border-dotted border-slate-400 mt-1">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between pr-3">
                     <span>ပေးငွေ (Cash):</span>
                     <span>{sale.cashReceived.toLocaleString()} ကျပ်</span>
                   </div>
                   {sale.changeAmount !== undefined && (
-                    <div className="flex justify-between font-bold text-slate-900">
+                    <div className="flex justify-between font-bold text-slate-900 pr-3">
                       <span>ပြန်အမ်းငွေ (Change):</span>
                       <span>{sale.changeAmount.toLocaleString()} ကျပ်</span>
                     </div>

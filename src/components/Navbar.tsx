@@ -6,14 +6,16 @@ import {
   BarChart3,
   Boxes,
   Store,
+  Settings,
 } from 'lucide-react';
-import { ShopInfo } from '../types';
+import { ShopInfo, TabLabels } from '../types';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   shopInfo: ShopInfo;
   onOpenShopInfo: () => void;
+  tabLabels: TabLabels;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,37 +23,44 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   shopInfo,
   onOpenShopInfo,
+  tabLabels,
 }) => {
   const tabs = [
     {
       id: 'pos',
-      label: '🛒 POS အရောင်း',
+      label: tabLabels.pos || '🛒 POS အရောင်း',
       sublabel: 'POS Counter',
       icon: ShoppingCart,
     },
     {
       id: 'products',
-      label: '📦 ပစ္စည်းမော်ဒယ်ဇယား',
+      label: tabLabels.products || '📦 ပစ္စည်းမော်ဒယ်ဇယား',
       sublabel: 'Products Master',
       icon: Package,
     },
     {
       id: 'stockin',
-      label: '📥 ပစ္စည်းအဝင်စာရင်း',
+      label: tabLabels.stockIn || '📥 ပစ္စည်းအဝင်စာရင်း',
       sublabel: 'Stock-In Entry',
       icon: ArrowDownCircle,
     },
     {
+      id: 'inventory',
+      label: tabLabels.inventory || '🧊 စတော့ကျန် စာရင်း',
+      sublabel: 'Current Stock',
+      icon: Boxes,
+    },
+    {
       id: 'reports',
-      label: '📊 အရောင်း အစီရင်ခံစာ',
+      label: tabLabels.reports || '📊 အရောင်း အစီရင်ခံစာ',
       sublabel: 'Sales Reports',
       icon: BarChart3,
     },
     {
-      id: 'inventory',
-      label: '🧊 စတော့ကျန် စာရင်း',
-      sublabel: 'Current Stock',
-      icon: Boxes,
+      id: 'settings',
+      label: tabLabels.settings || '⚙️ ပြင်ဆင်ရန်',
+      sublabel: 'Settings',
+      icon: Settings,
     },
   ];
 
