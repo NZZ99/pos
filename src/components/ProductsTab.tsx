@@ -24,8 +24,9 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   const [name, setName] = useState('');
   const [retailPrice, setRetailPrice] = useState<number | ''>('');
   const [wholesalePrice, setWholesalePrice] = useState<number | ''>('');
-  const [minStockKg, setMinStockKg] = useState<number | ''>('');
+  const [minStock, setMinStock] = useState<number | ''>('');
   const [category, setCategory] = useState('ကြက်သား');
+  const [unit, setUnit] = useState('ထုတ်');
 
   const categories = ['ကြက်သား', 'ဆတ်သား/အမဲသား', 'ဝက်သား', 'ပင်လယ်စာ', 'ငါး / ပင်လယ်စာ', 'အခြား'];
 
@@ -38,8 +39,9 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
     setName('');
     setRetailPrice('');
     setWholesalePrice('');
-    setMinStockKg(50);
+    setMinStock(10);
     setCategory('ကြက်သား');
+    setUnit('ထုတ်');
     setIsModalOpen(true);
   };
 
@@ -49,8 +51,9 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
     setName(p.name);
     setRetailPrice(p.retailPrice);
     setWholesalePrice(p.wholesalePrice);
-    setMinStockKg(p.minStockKg);
+    setMinStock(p.minStock);
     setCategory(p.category || 'ကြက်သား');
+    setUnit(p.unit || 'ထုတ်');
     setIsModalOpen(true);
   };
 
@@ -65,9 +68,9 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
         name,
         retailPrice: Number(retailPrice),
         wholesalePrice: Number(wholesalePrice),
-        minStockKg: Number(minStockKg) || 0,
+        minStock: Number(minStock) || 0,
         category,
-        unit: 'KG',
+        unit: unit || 'ထုတ်',
       });
     } else {
       onAddProduct({
@@ -75,9 +78,9 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
         name,
         retailPrice: Number(retailPrice),
         wholesalePrice: Number(wholesalePrice),
-        minStockKg: Number(minStockKg) || 0,
+        minStock: Number(minStock) || 0,
         category,
-        unit: 'KG',
+        unit: unit || 'ထုတ်',
       });
     }
 
@@ -144,10 +147,10 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                   ကုန်ပစ္စည်းအမည်
                 </th>
                 <th className="py-3.5 px-4 text-right border-r border-indigo-600/50 w-40">
-                  လက်လီဈေး (၁-KG)
+                  လက်လီဈေး
                 </th>
                 <th className="py-3.5 px-4 text-right border-r border-indigo-600/50 w-40">
-                  လက်ကားဈေး (၁-KG)
+                  လက်ကားဈေး
                 </th>
                 <th className="py-3.5 px-4 text-center border-r border-indigo-600/50 w-36">
                   အနည်းဆုံးလက်ကျန်
@@ -180,14 +183,14 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                       {p.name}
                     </td>
                     <td className="py-3 px-4 text-right font-medium text-indigo-700 border-r border-slate-200">
-                      {p.retailPrice.toLocaleString()} ကျပ်
+                      {(p.retailPrice ?? 0).toLocaleString()} ကျပ်
                     </td>
                     <td className="py-3 px-4 text-right font-medium text-slate-800 border-r border-slate-200">
-                      {p.wholesalePrice.toLocaleString()} ကျပ်
+                      {(p.wholesalePrice ?? 0).toLocaleString()} ကျပ်
                     </td>
                     <td className="py-3 px-4 text-center font-medium text-slate-600 border-r border-slate-200">
                       <span className="inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs">
-                        {p.minStockKg} KG
+                        {p.minStock ?? (p as any).minStockKg ?? 0} {p.unit || 'ခု'}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-center border-r border-slate-200">
@@ -279,7 +282,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-600 font-medium mb-1">
-                    လက်လီဈေး (၁-KG) *
+                    လက်လီဈေး *
                   </label>
                   <input
                     type="number"
@@ -293,7 +296,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
 
                 <div>
                   <label className="block text-slate-600 font-medium mb-1">
-                    လက်ကားဈေး (၁-KG) *
+                    လက်ကားဈေး *
                   </label>
                   <input
                     type="number"
@@ -306,17 +309,32 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-600 font-medium mb-1">
-                  အနည်းဆုံးလက်ကျန် သတိပေးချက် (KG)
-                </label>
-                <input
-                  type="number"
-                  value={minStockKg}
-                  onChange={(e) => setMinStockKg(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                  placeholder="100"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-600 font-medium mb-1">
+                    ရေတွက်ပုံ ရေတွက်နည်း (Unit)
+                  </label>
+                  <input
+                    type="text"
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                    placeholder="e.g. ထုတ် / ပွဲ / ခု"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-600 font-medium mb-1">
+                    အနည်းဆုံးလက်ကျန် သတိပေးချက်
+                  </label>
+                  <input
+                    type="number"
+                    value={minStock}
+                    onChange={(e) => setMinStock(e.target.value ? Number(e.target.value) : '')}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                    placeholder="10"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">

@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ShoppingCart,
   Package,
   ArrowDownCircle,
   BarChart3,
   Boxes,
-  Store,
   Settings,
+  Menu,
+  X,
 } from 'lucide-react';
 import { ShopInfo, TabLabels } from '../types';
 
@@ -14,7 +15,6 @@ interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   shopInfo: ShopInfo;
-  onOpenShopInfo: () => void;
   tabLabels: TabLabels;
 }
 
@@ -22,9 +22,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
   shopInfo,
-  onOpenShopInfo,
   tabLabels,
 }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const tabs = [
     {
       id: 'pos',
@@ -65,68 +66,119 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="bg-white border-b border-slate-200 shadow-xs sticky top-0 z-40">
-      {/* Top Brand Bar (Soft Blue / Indigo Theme) */}
-      <div className="bg-slate-900 text-white px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+    <header className="bg-slate-900 text-white border-b border-slate-800 shadow-sm sticky top-0 z-40">
+      {/* Top Header Bar */}
+      <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        {/* Left Side: Hamburger Menu Button + Brand Title */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-inner">
-            🧊
-          </div>
-          <div>
-            <h1 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
-              <span>{shopInfo.name}</span>
-            </h1>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              {shopInfo.tagline}
-            </p>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white border border-slate-700 transition-colors cursor-pointer flex items-center justify-center"
+            title="စာမျက်နှာများ ရွေးချယ်ရန် (Menu)"
+          >
+            {isMenuOpen ? <X className="w-5 h-5 text-rose-400" /> : <Menu className="w-5 h-5" />}
+          </button>
+
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-inner">
+              🧊
+            </div>
+            <div>
+              <h1 className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
+                {shopInfo.name}
+              </h1>
+              <p className="text-[11px] text-slate-400 hidden sm:block">
+                {shopInfo.tagline}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Global Action Controls */}
+        {/* Right Side: Active Tab Indicator */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={onOpenShopInfo}
-            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 border border-indigo-500 transition-colors cursor-pointer shadow-xs"
-            title="ဆိုင်အချက်အလက် ပြင်ဆင်ရန်"
-          >
-            <Store className="w-3.5 h-3.5 text-indigo-100" />
-            <span>ဆိုင်အချက်အလက် ပြင်ရန်</span>
-          </button>
+          <div className="hidden md:flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/80 text-xs">
+            <span className="text-slate-400">လက်ရှိ စာမျက်နှာ:</span>
+            <span className="font-bold text-indigo-300">
+              {tabs.find((t) => t.id === activeTab)?.label}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Navigation Tabs Bar */}
-      <div className="px-4 sm:px-6 bg-slate-50/80 backdrop-blur-xs overflow-x-auto">
-        <nav className="flex space-x-1 py-1.5 min-w-max">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
+      {/* Vertical Navigation Slide-out Drawer / Menu Overlay */}
+      {isMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40"
+            onClick={() => setIsMenuOpen(false)}
+          />
+
+          {/* Vertical Menu Sidebar Drawer */}
+          <aside className="fixed top-0 left-0 bottom-0 w-72 bg-slate-900 text-white z-50 border-r border-slate-800 shadow-2xl flex flex-col animate-in slide-in-from-left duration-200">
+            {/* Drawer Header */}
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                  🧊
+                </div>
+                <span className="font-bold text-sm text-white">Menu Navigation</span>
+              </div>
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-2 cursor-pointer ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-xs font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
-                }`}
+                onClick={() => setIsMenuOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-                <div className="text-left leading-none">
-                  <div>{tab.label}</div>
-                  <span
-                    className={`text-[10px] block mt-0.5 opacity-80 font-normal ${
-                      isActive ? 'text-indigo-100' : 'text-slate-400'
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Shop Info Summary inside Drawer */}
+            <div className="p-4 bg-slate-800/50 border-b border-slate-800">
+              <h2 className="text-xs font-bold text-indigo-300">{shopInfo.name}</h2>
+              <p className="text-[11px] text-slate-400 mt-0.5">{shopInfo.address}</p>
+            </div>
+
+            {/* Vertical Tab Links */}
+            <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setIsMenuOpen(false);
+                    }}
+                    className={`w-full px-4 py-3 rounded-xl text-xs sm:text-sm font-medium transition-all flex items-center gap-3 cursor-pointer text-left ${
+                      isActive
+                        ? 'bg-indigo-600 text-white shadow-md font-bold'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
                     }`}
                   >
-                    {tab.sublabel}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+                    <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="truncate">{tab.label}</div>
+                      <span
+                        className={`text-[10px] block mt-0.5 opacity-80 font-normal ${
+                          isActive ? 'text-indigo-100' : 'text-slate-400'
+                        }`}
+                      >
+                        {tab.sublabel}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Drawer Footer */}
+            <div className="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center bg-slate-950/40">
+              <span>အအေးခဲ အသားငါး အရောင်းဆိုင် POS</span>
+            </div>
+          </aside>
+        </>
+      )}
     </header>
   );
 };

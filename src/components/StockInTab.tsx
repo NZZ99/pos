@@ -21,11 +21,9 @@ export const StockInTab: React.FC<StockInTabProps> = ({
   // Form State
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
-  const [batchId, setBatchId] = useState('');
   const [selectedProductCode, setSelectedProductCode] = useState('');
-  const [boxCount, setBoxCount] = useState<number | ''>('');
-  const [totalKg, setTotalKg] = useState<number | ''>('');
-  const [purchasePricePerKg, setPurchasePricePerKg] = useState<number | ''>('');
+  const [qty, setQty] = useState<number | ''>('');
+  const [purchasePrice, setPurchasePrice] = useState<number | ''>('');
   const [expiryDate, setExpiryDate] = useState('');
   const [storageLocation, setStorageLocation] = useState('Freezer A-01');
 
@@ -35,16 +33,8 @@ export const StockInTab: React.FC<StockInTabProps> = ({
       setSelectedProductCode(activeProduct.code);
     }
     setDate(today);
-
-    // Auto batch ID format: B-YYMMDD-XX
-    const dateFormatted = today.replace(/-/g, '').slice(2);
-    const existingBatchesToday = stockInList.filter((s) => s.batchId.includes(dateFormatted));
-    const batchSeq = String(existingBatchesToday.length + 1).padStart(2, '0');
-    setBatchId(`B-${dateFormatted}-${batchSeq}`);
-
-    setBoxCount(10);
-    setTotalKg(100);
-    setPurchasePricePerKg(8000);
+    setQty(10);
+    setPurchasePrice(8000);
 
     // Default expiry 6 months from today
     const exp = new Date();
@@ -57,22 +47,20 @@ export const StockInTab: React.FC<StockInTabProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProductCode || !batchId || !totalKg || !purchasePricePerKg) return;
+    if (!selectedProductCode || !qty || !purchasePrice) return;
 
     const matchedProduct = products.find((p) => p.code === selectedProductCode);
     const pName = matchedProduct ? matchedProduct.name : 'Unknown Product';
-    const numTotalKg = Number(totalKg);
-    const numPrice = Number(purchasePricePerKg);
-    const totalCost = numTotalKg * numPrice;
+    const numQty = Number(qty);
+    const numPrice = Number(purchasePrice);
+    const totalCost = numQty * numPrice;
 
     onAddStockIn({
       date,
-      batchId,
       productCode: selectedProductCode,
       productName: pName,
-      boxCount: Number(boxCount) || 0,
-      totalKg: numTotalKg,
-      purchasePricePerKg: numPrice,
+      qty: numQty,
+      purchasePrice: numPrice,
       totalCost,
       expiryDate,
       storageLocation,
@@ -84,14 +72,12 @@ export const StockInTab: React.FC<StockInTabProps> = ({
   const filteredList = stockInList.filter(
     (stk) =>
       stk.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      stk.batchId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stk.productCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       stk.storageLocation.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalBoxes = filteredList.reduce((sum, s) => sum + s.boxCount, 0);
-  const totalWeightKg = filteredList.reduce((sum, s) => sum + s.totalKg, 0);
-  const totalCostSum = filteredList.reduce((sum, s) => sum + s.totalCost, 0);
+  const totalQtySum = filteredList.reduce((sum, s) => sum + (s.qty ?? (s as any).totalKg ?? 0), 0);
+  const totalCostSum = filteredList.reduce((sum, s) => sum + (s.totalCost ?? 0), 0);
 
   return (
     <div className="space-y-6">
@@ -132,19 +118,17 @@ export const StockInTab: React.FC<StockInTabProps> = ({
         />
       </div>
 
-      {/* Table replicating Image 2 Section 1 */}
+      {/* Table Section */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs sm:text-sm">
             <thead>
               <tr className="bg-indigo-700 text-white font-semibold tracking-wide">
                 <th className="py-3 px-3 text-center border-r border-indigo-600/50">ရက်စွဲ</th>
-                <th className="py-3 px-3 text-center border-r border-indigo-600/50">Batch ID</th>
                 <th className="py-3 px-3 text-center border-r border-indigo-600/50">ပစ္စည်းကုဒ်</th>
                 <th className="py-3 px-4 border-r border-indigo-600/50">ပစ္စည်းအမည်</th>
-                <th className="py-3 px-3 text-right border-r border-indigo-600/50">သေတ္တာ (Box)</th>
-                <th className="py-3 px-3 text-right border-r border-indigo-600/50">စုစုပေါင်း KG</th>
-                <th className="py-3 px-3 text-right border-r border-indigo-600/50">ဝယ်ဈေး (၁-KG)</th>
+                <th className="py-3 px-3 text-right border-r border-indigo-600/50">အရေအတွက်</th>
+                <th className="py-3 px-3 text-right border-r border-indigo-600/50">ဝယ်ဈေး</th>
                 <th className="py-3 px-4 text-right border-r border-indigo-600/50">စုစုပေါင်းကျသင့်ငွေ</th>
                 <th className="py-3 px-3 text-center border-r border-indigo-600/50">Expiry Date</th>
                 <th className="py-3 px-3 text-center border-r border-indigo-600/50">သိမ်းဆည်းနေရာ</th>
@@ -154,7 +138,7 @@ export const StockInTab: React.FC<StockInTabProps> = ({
             <tbody className="divide-y divide-slate-200 text-slate-700">
               {filteredList.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-slate-400">
                     ပစ္စည်းအဝင် စာရင်းမရှိသေးပါ။
                   </td>
                 </tr>
@@ -169,26 +153,20 @@ export const StockInTab: React.FC<StockInTabProps> = ({
                     <td className="py-3 px-3 text-center border-r border-slate-200 text-slate-600 font-medium">
                       {stk.date}
                     </td>
-                    <td className="py-3 px-3 text-center border-r border-slate-200 font-semibold text-indigo-700">
-                      {stk.batchId}
-                    </td>
                     <td className="py-3 px-3 text-center border-r border-slate-200 font-medium text-slate-800">
                       {stk.productCode}
                     </td>
                     <td className="py-3 px-4 border-r border-slate-200 font-medium text-slate-900">
                       {stk.productName}
                     </td>
-                    <td className="py-3 px-3 text-right border-r border-slate-200 font-medium">
-                      {stk.boxCount}
-                    </td>
                     <td className="py-3 px-3 text-right border-r border-slate-200 font-semibold text-slate-900">
-                      {stk.totalKg.toLocaleString()} KG
+                      {(stk.qty ?? (stk as any).totalKg ?? 0).toLocaleString()}
                     </td>
                     <td className="py-3 px-3 text-right border-r border-slate-200">
-                      {stk.purchasePricePerKg.toLocaleString()}
+                      {(stk.purchasePrice ?? (stk as any).purchasePricePerKg ?? 0).toLocaleString()} ကျပ်
                     </td>
                     <td className="py-3 px-4 text-right border-r border-slate-200 font-semibold text-indigo-700">
-                      {stk.totalCost.toLocaleString()} ကျပ်
+                      {(stk.totalCost ?? 0).toLocaleString()} ကျပ်
                     </td>
                     <td className="py-3 px-3 text-center border-r border-slate-200 text-slate-600 text-xs">
                       {stk.expiryDate}
@@ -214,12 +192,11 @@ export const StockInTab: React.FC<StockInTabProps> = ({
             {/* Table Footer Total Summary Row */}
             <tfoot className="bg-indigo-50/80 font-bold text-slate-900 border-t-2 border-indigo-200 text-xs sm:text-sm">
               <tr>
-                <td colSpan={4} className="py-3 px-4 border-r border-slate-200 text-right">
+                <td colSpan={3} className="py-3 px-4 border-r border-slate-200 text-right">
                   Total (စုစုပေါင်း):
                 </td>
-                <td className="py-3 px-3 text-right border-r border-slate-200">{totalBoxes} Box</td>
                 <td className="py-3 px-3 text-right border-r border-slate-200 text-indigo-800">
-                  {totalWeightKg.toLocaleString()} KG
+                  {totalQtySum.toLocaleString()}
                 </td>
                 <td className="py-3 px-3 text-center border-r border-slate-200">-</td>
                 <td className="py-3 px-4 text-right border-r border-slate-200 text-indigo-800">
@@ -241,28 +218,15 @@ export const StockInTab: React.FC<StockInTabProps> = ({
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-600 font-medium mb-1">ရက်စွဲ *</label>
-                  <input
-                    type="date"
-                    required
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 font-medium mb-1">Batch ID *</label>
-                  <input
-                    type="text"
-                    required
-                    value={batchId}
-                    onChange={(e) => setBatchId(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                    placeholder="B-260712-01"
-                  />
-                </div>
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">ရက်စွဲ *</label>
+                <input
+                  type="date"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                />
               </div>
 
               <div>
@@ -284,50 +248,28 @@ export const StockInTab: React.FC<StockInTabProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 font-medium mb-1">သေတ္တာ အရေအတွက် (Box)</label>
-                  <input
-                    type="number"
-                    value={boxCount}
-                    onChange={(e) => setBoxCount(e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                    placeholder="50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-600 font-medium mb-1">စုစုပေါင်း KG *</label>
+                  <label className="block text-slate-600 font-medium mb-1">အရေအတွက် *</label>
                   <input
                     type="number"
                     required
-                    step="0.01"
-                    value={totalKg}
-                    onChange={(e) => setTotalKg(e.target.value ? Number(e.target.value) : '')}
+                    value={qty}
+                    onChange={(e) => setQty(e.target.value ? Number(e.target.value) : '')}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                    placeholder="500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-600 font-medium mb-1">
-                    ဝယ်ဈေး (၁-KG) *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    value={purchasePricePerKg}
-                    onChange={(e) => setPurchasePricePerKg(e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
-                    placeholder="7500"
+                    placeholder="10"
                   />
                 </div>
                 <div>
                   <label className="block text-slate-600 font-medium mb-1">
-                    စုစုပေါင်း ကျသင့်ငွေ (ကျပ်)
+                    ဝယ်ဈေး (၁ ခု) *
                   </label>
-                  <div className="px-3 py-2 bg-slate-100 font-bold text-indigo-700 rounded-lg border border-slate-200">
-                    {((Number(totalKg) || 0) * (Number(purchasePricePerKg) || 0)).toLocaleString()} ကျပ်
-                  </div>
+                  <input
+                    type="number"
+                    required
+                    value={purchasePrice}
+                    onChange={(e) => setPurchasePrice(e.target.value ? Number(e.target.value) : '')}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
+                    placeholder="8000"
+                  />
                 </div>
               </div>
 
@@ -350,6 +292,15 @@ export const StockInTab: React.FC<StockInTabProps> = ({
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500"
                     placeholder="Freezer A-01"
                   />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">
+                  စုစုပေါင်း ကျသင့်ငွေ (ကျပ်)
+                </label>
+                <div className="px-3 py-2 bg-slate-100 font-bold text-indigo-700 rounded-lg border border-slate-200">
+                  {((Number(qty) || 0) * (Number(purchasePrice) || 0)).toLocaleString()} ကျပ်
                 </div>
               </div>
 

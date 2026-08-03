@@ -56,21 +56,19 @@ export const POSTab: React.FC<POSTabProps> = ({
   });
 
   const addToCart = (product: Product) => {
-    const defaultBatch =
-      stockInList.find((s) => s.productCode === product.code)?.batchId || 'DEFAULT';
     const price = saleType === 'Wholesale' ? product.wholesalePrice : product.retailPrice;
 
-    // Check if item already exists in cart with same batch and saleType
+    // Check if item already exists in cart with same product code
     const existingIndex = cart.findIndex((i) => i.productCode === product.code);
 
     if (existingIndex > -1) {
       const updatedCart = [...cart];
       const existing = updatedCart[existingIndex];
-      const newWeight = existing.weightKg + 1;
+      const newQty = existing.quantity + 1;
       updatedCart[existingIndex] = {
         ...existing,
-        weightKg: newWeight,
-        totalAmount: newWeight * existing.pricePerKg,
+        quantity: newQty,
+        totalAmount: newQty * existing.unitPrice,
       };
       setCart(updatedCart);
     } else {
@@ -78,9 +76,8 @@ export const POSTab: React.FC<POSTabProps> = ({
         id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         productCode: product.code,
         productName: product.name,
-        batchId: defaultBatch,
-        weightKg: 1,
-        pricePerKg: price,
+        quantity: 1,
+        unitPrice: price,
         totalAmount: price,
         saleType,
       };
@@ -88,8 +85,8 @@ export const POSTab: React.FC<POSTabProps> = ({
     }
   };
 
-  const updateCartWeight = (cartId: string, weightKg: number) => {
-    if (weightKg <= 0) {
+  const updateCartQty = (cartId: string, quantity: number) => {
+    if (quantity <= 0) {
       removeFromCart(cartId);
       return;
     }
@@ -98,8 +95,8 @@ export const POSTab: React.FC<POSTabProps> = ({
         if (item.id === cartId) {
           return {
             ...item,
-            weightKg,
-            totalAmount: weightKg * item.pricePerKg,
+            quantity,
+            totalAmount: quantity * item.unitPrice,
           };
         }
         return item;
@@ -107,24 +104,18 @@ export const POSTab: React.FC<POSTabProps> = ({
     );
   };
 
-  const updateCartPrice = (cartId: string, pricePerKg: number) => {
+  const updateCartPrice = (cartId: string, unitPrice: number) => {
     setCart((prev) =>
       prev.map((item) => {
         if (item.id === cartId) {
           return {
             ...item,
-            pricePerKg,
-            totalAmount: item.weightKg * pricePerKg,
+            unitPrice,
+            totalAmount: item.quantity * unitPrice,
           };
         }
         return item;
       })
-    );
-  };
-
-  const updateCartBatch = (cartId: string, batchId: string) => {
-    setCart((prev) =>
-      prev.map((item) => (item.id === cartId ? { ...item, batchId } : item))
     );
   };
 
@@ -143,15 +134,15 @@ export const POSTab: React.FC<POSTabProps> = ({
         return {
           ...item,
           saleType: type,
-          pricePerKg: newPrice,
-          totalAmount: item.weightKg * newPrice,
+          unitPrice: newPrice,
+          totalAmount: item.quantity * newPrice,
         };
       })
     );
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.totalAmount, 0);
-  const totalWeightKg = cart.reduce((sum, item) => sum + item.weightKg, 0);
+  const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
   const numDiscount = Number(discount) || 0;
   const grandTotal = Math.max(0, subtotal - numDiscount);
 
@@ -177,7 +168,7 @@ export const POSTab: React.FC<POSTabProps> = ({
       customerName: customerName.trim() || 'အထွေထွေဝယ်သူ',
       saleType,
       items: cart.map(({ id, ...rest }) => rest),
-      totalWeightKg,
+      totalQty,
       subtotal,
       discount: numDiscount,
       grandTotal,
@@ -298,7 +289,7 @@ export const POSTab: React.FC<POSTabProps> = ({
                       {saleType === 'Wholesale' ? 'လက်ကားဈေး' : 'လက်လီဈေး'}
                     </span>
                     <span className="text-xs sm:text-sm font-bold text-indigo-700">
-                      {price.toLocaleString()} ကျပ်
+                      {(price ?? 0).toLocaleString()} ကျပ်
                     </span>
                   </div>
                   <div className="w-7 h-7 rounded-xl bg-indigo-50 group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center transition-colors">
@@ -355,29 +346,28 @@ export const POSTab: React.FC<POSTabProps> = ({
                       </button>
                     </div>
 
-                    {/* Weight & Price inputs */}
+                    {/* Qty & Price inputs */}
                     <div className="grid grid-cols-12 gap-2 items-center pt-1">
-                      {/* Weight KG */}
+                      {/* Quantity */}
                       <div className="col-span-4 flex items-center gap-1">
-                        <label className="text-[10px] text-slate-500">KG:</label>
+                        <label className="text-[10px] text-slate-500">အရေအတွက်:</label>
                         <input
                           type="number"
-                          step="0.1"
-                          min="0.1"
-                          value={item.weightKg}
+                          min="1"
+                          value={item.quantity}
                           onChange={(e) =>
-                            updateCartWeight(item.id, parseFloat(e.target.value) || 0)
+                            updateCartQty(item.id, parseInt(e.target.value) || 0)
                           }
                           className="w-full px-2 py-1 bg-white border border-slate-300 rounded font-semibold text-right focus:outline-none focus:border-indigo-500"
                         />
                       </div>
 
-                      {/* Price/KG */}
+                      {/* Unit Price */}
                       <div className="col-span-4 flex items-center gap-1">
                         <label className="text-[10px] text-slate-500">ဈေး:</label>
                         <input
                           type="number"
-                          value={item.pricePerKg}
+                          value={item.unitPrice}
                           onChange={(e) =>
                             updateCartPrice(item.id, parseFloat(e.target.value) || 0)
                           }
@@ -387,27 +377,9 @@ export const POSTab: React.FC<POSTabProps> = ({
 
                       {/* Line Total */}
                       <div className="col-span-4 text-right font-bold text-indigo-700">
-                        {item.totalAmount.toLocaleString()} ကျပ်
+                        {(item.totalAmount ?? 0).toLocaleString()} ကျပ်
                       </div>
                     </div>
-
-                    {/* Batch Selection */}
-                    {productBatches.length > 0 && (
-                      <div className="flex items-center gap-2 pt-1">
-                        <span className="text-[10px] text-slate-400">Batch:</span>
-                        <select
-                          value={item.batchId}
-                          onChange={(e) => updateCartBatch(item.id, e.target.value)}
-                          className="text-[11px] bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-700"
-                        >
-                          {productBatches.map((b) => (
-                            <option key={b.id} value={b.batchId}>
-                              {b.batchId} ({b.storageLocation})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
                   </div>
                 );
               })
@@ -497,8 +469,8 @@ export const POSTab: React.FC<POSTabProps> = ({
               {/* Calculation Breakdown */}
               <div className="bg-indigo-50/70 p-3 rounded-xl space-y-1.5 text-slate-700 font-medium">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">စုစုပေါင်း အလေးချိန်:</span>
-                  <span>{totalWeightKg.toLocaleString()} KG</span>
+                  <span className="text-slate-500">စုစုပေါင်း အရေအတွက်:</span>
+                  <span>{totalQty.toLocaleString()} ခု</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">ကျသင့်ငွေ:</span>

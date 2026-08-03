@@ -14,7 +14,6 @@ import { ReportsTab } from './components/ReportsTab';
 import { InventoryTab } from './components/InventoryTab';
 import { SettingsTab } from './components/SettingsTab';
 import { VoucherModal } from './components/VoucherModal';
-import { ShopInfoModal } from './components/ShopInfoModal';
 import { exportPOSToExcel } from './utils/excelExporter';
 
 const DEFAULT_TAB_LABELS: TabLabels = {
@@ -112,7 +111,7 @@ export default function App() {
   const handleAddStockIn = (newStk: Omit<StockInRecord, 'id'>) => {
     const stk: StockInRecord = { ...newStk, id: `stk-${Date.now()}` };
     setStockInList((prev) => [stk, ...prev]);
-    showToast(`ပစ္စည်းအဝင် (${stk.batchId}) ထည့်သွင်းပြီးပါပြီ။`);
+    showToast(`ပစ္စည်းအဝင် (${stk.productName}) ထည့်သွင်းပြီးပါပြီ။`);
   };
 
   const handleDeleteStockIn = (id: string) => {
@@ -150,7 +149,6 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         shopInfo={shopInfo}
-        onOpenShopInfo={() => setIsShopInfoOpen(true)}
         tabLabels={tabLabels}
       />
 
@@ -221,16 +219,6 @@ export default function App() {
         sale={activeVoucher}
         shopInfo={shopInfo}
         onClose={() => setActiveVoucher(null)}
-      />
-
-      <ShopInfoModal
-        isOpen={isShopInfoOpen}
-        shopInfo={shopInfo}
-        onSave={(updated) => {
-          setShopInfo(updated);
-          showToast('ဆိုင်အချက်အလက် သိမ်းဆည်းပြီးပါပြီ။');
-        }}
-        onClose={() => setIsShopInfoOpen(false)}
       />
     </div>
   );

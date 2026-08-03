@@ -1,6 +1,6 @@
 {
-  "name": "အအေးခဲအသားငါး စီမံခန့်ခွဲမှုနှင့် POS စနစ် (Excel Export & Voucher)",
-  "description": "Frozen Meat & Seafood Management & POS System with formatted Excel (.xlsx) export, voucher printing, light blue design, and daily/weekly/monthly sales reporting.",
+  "name": "အအေးခဲ အသားငါး အရောင်းဆိုင် (တောင်ကြီးမြို့) စားသောက်ဆိုင်",
+  "description": "အအေးခဲ အသားငါး အရောင်းဆိုင် (တောင်ကြီးမြို့) စားသောက်ဆိုင် - POS အရောင်းနှင့် စတော့ စီမံခန့်ခွဲမှု စနစ်",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

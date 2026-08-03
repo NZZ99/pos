@@ -71,8 +71,12 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
   const filteredSales = getFilteredSales();
 
   // Aggregate Metrics
-  const totalRevenue = filteredSales.reduce((sum, s) => sum + s.grandTotal, 0);
-  const totalWeightKg = filteredSales.reduce((sum, s) => sum + s.totalWeightKg, 0);
+  const totalRevenue = filteredSales.reduce((sum, s) => sum + (s.grandTotal || 0), 0);
+  const totalQtySold = filteredSales.reduce((sum, s) => {
+    if (s.totalQty !== undefined) return sum + s.totalQty;
+    const itemSum = (s.items || []).reduce((iSum, item) => iSum + (item.quantity ?? (item as any).weightKg ?? 0), 0);
+    return sum + itemSum;
+  }, 0);
   const totalVouchers = filteredSales.length;
 
   const cashSales = filteredSales
@@ -227,12 +231,12 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
         </div>
 
-        {/* Total Weight Sold */}
+        {/* Total Quantity Sold */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-xs text-slate-500 font-medium">စုစုပေါင်း အလေးချိန် (KG)</p>
+            <p className="text-xs text-slate-500 font-medium">စုစုပေါင်း ရောင်းရ အရေအတွက်</p>
             <h3 className="text-xl font-bold text-slate-800">
-              {totalWeightKg.toLocaleString()} KG
+              {totalQtySold.toLocaleString()} ခု
             </h3>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center">
@@ -290,10 +294,9 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                 <th className="py-3 px-4 border-r border-indigo-600/50">ဝယ်သူအမည်</th>
                 <th className="py-3 px-3 text-center border-r border-indigo-600/50">အမျိုးအစား</th>
                 <th className="py-3 px-4 border-r border-indigo-600/50">ပစ္စည်းအမည်</th>
-                <th className="py-3 px-3 text-center border-r border-indigo-600/50">Batch ID</th>
-                <th className="py-3 px-3 text-right border-r border-indigo-600/50">အလေးချိန် (KG)</th>
+                <th className="py-3 px-3 text-right border-r border-indigo-600/50">အရေအတွက်</th>
                 <th className="py-3 px-3 text-right border-r border-indigo-600/50">
-                  ရောင်းဈေး (KG)
+                  ရောင်းဈေး
                 </th>
                 <th className="py-3 px-4 text-right border-r border-indigo-600/50">
                   အသားတင်ကျသင့်ငွေ
@@ -305,7 +308,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             <tbody className="divide-y divide-slate-200 text-slate-700">
               {filteredSales.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     ရွေးချယ်ထားသော စစ်ထုတ်ချက်နှင့် ကိုက်ညီသော အရောင်းမှတ်တမ်းမရှိပါ။
                   </td>
                 </tr>
@@ -359,20 +362,16 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                         {item.productName}
                       </td>
 
-                      <td className="py-3 px-3 text-center border-r border-slate-200 text-xs text-slate-500">
-                        {item.batchId || '-'}
-                      </td>
-
                       <td className="py-3 px-3 text-right border-r border-slate-200 font-semibold">
-                        {item.weightKg.toLocaleString()} KG
+                        {(item.quantity ?? (item as any).weightKg ?? 0).toLocaleString()}
                       </td>
 
                       <td className="py-3 px-3 text-right border-r border-slate-200">
-                        {item.pricePerKg.toLocaleString()}
+                        {(item.unitPrice ?? (item as any).pricePerKg ?? 0).toLocaleString()} ကျပ်
                       </td>
 
                       <td className="py-3 px-4 text-right border-r border-slate-200 font-semibold text-indigo-700">
-                        {item.totalAmount.toLocaleString()} ကျပ်
+                        {(item.totalAmount ?? 0).toLocaleString()} ကျပ်
                       </td>
 
                       {itemIdx === 0 ? (
@@ -413,11 +412,11 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             </tbody>
             <tfoot className="bg-indigo-50/80 font-bold text-slate-900 border-t-2 border-indigo-200 text-xs sm:text-sm">
               <tr>
-                <td colSpan={6} className="py-3 px-4 text-right border-r border-slate-200">
+                <td colSpan={5} className="py-3 px-4 text-right border-r border-slate-200">
                   စုစုပေါင်း (Total):
                 </td>
                 <td className="py-3 px-3 text-right border-r border-slate-200 text-indigo-800">
-                  {totalWeightKg.toLocaleString()} KG
+                  {totalQtySold.toLocaleString()}
                 </td>
                 <td className="py-3 px-3 text-center border-r border-slate-200">-</td>
                 <td className="py-3 px-4 text-right border-r border-slate-200 text-indigo-800">

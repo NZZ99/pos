@@ -20,17 +20,17 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
   const inventoryData = products.map((p) => {
     const totalIn = stockInList
       .filter((s) => s.productCode === p.code)
-      .reduce((sum, s) => sum + s.totalKg, 0);
+      .reduce((sum, s) => sum + (s.qty || 0), 0);
 
     const totalSold = salesList.reduce((sum, sale) => {
-      const itemKg = sale.items
+      const itemQty = sale.items
         .filter((i) => i.productCode === p.code)
-        .reduce((sSum, item) => sSum + item.weightKg, 0);
-      return sum + itemKg;
+        .reduce((sSum, item) => sSum + (item.quantity || 0), 0);
+      return sum + itemQty;
     }, 0);
 
     const currentStock = totalIn - totalSold;
-    const isLow = currentStock <= p.minStockKg;
+    const isLow = currentStock <= (p.minStock || 0);
 
     return {
       product: p,
@@ -81,7 +81,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
         </div>
       )}
 
-      {/* View Switcher & Search Bar */}
+      {/* Search Bar */}
       <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
@@ -93,159 +93,78 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
             className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           />
         </div>
-
-        <div className="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200 text-xs">
-          <button
-            onClick={() => setViewMode('product')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-              viewMode === 'product'
-                ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            ပစ္စည်းအလိုက် (Product Wise)
-          </button>
-          <button
-            onClick={() => setViewMode('batch')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-              viewMode === 'batch'
-                ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Batch အလိုက် (Batch Wise)
-          </button>
-        </div>
       </div>
 
       {/* Main Stock Table */}
-      {viewMode === 'product' ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs sm:text-sm">
-              <thead>
-                <tr className="bg-indigo-700 text-white font-semibold tracking-wide">
-                  <th className="py-3 px-4 text-center border-r border-indigo-600/50">
-                    ကုန်ပစ္စည်းကုဒ်
-                  </th>
-                  <th className="py-3 px-6 border-r border-indigo-600/50">ကုန်ပစ္စည်းအမည်</th>
-                  <th className="py-3 px-4 text-right border-r border-indigo-600/50">
-                    အဝင် စုစုပေါင်း (KG)
-                  </th>
-                  <th className="py-3 px-4 text-right border-r border-indigo-600/50">
-                    အရောင်း စုစုပေါင်း (KG)
-                  </th>
-                  <th className="py-3 px-4 text-right border-r border-indigo-600/50">
-                    လက်ရှိစတော့ကျန် (KG)
-                  </th>
-                  <th className="py-3 px-4 text-center border-r border-indigo-600/50">
-                    အနည်းဆုံး သတိပေးချက်
-                  </th>
-                  <th className="py-3 px-4 text-center">စတော့အခြေအနေ</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 text-slate-700">
-                {filteredProducts.map((item, idx) => (
-                  <tr
-                    key={item.product.id}
-                    className={`hover:bg-indigo-50/40 transition-colors ${
-                      item.isLow ? 'bg-amber-50/40' : idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'
-                    }`}
-                  >
-                    <td className="py-3.5 px-4 text-center font-bold text-slate-900 border-r border-slate-200">
-                      {item.product.code}
-                    </td>
-                    <td className="py-3.5 px-6 font-medium text-slate-900 border-r border-slate-200">
-                      {item.product.name}
-                    </td>
-                    <td className="py-3.5 px-4 text-right border-r border-slate-200 text-slate-600">
-                      {item.totalIn.toLocaleString()} KG
-                    </td>
-                    <td className="py-3.5 px-4 text-right border-r border-slate-200 text-slate-600">
-                      {item.totalSold.toLocaleString()} KG
-                    </td>
-                    <td className="py-3.5 px-4 text-right border-r border-slate-200 font-bold text-base text-indigo-700">
-                      {item.currentStock.toLocaleString()} KG
-                    </td>
-                    <td className="py-3.5 px-4 text-center border-r border-slate-200 text-slate-500">
-                      {item.product.minStockKg} KG
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      {item.isLow ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-semibold text-xs border border-rose-200">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          <span>စတော့နည်းနေသည်</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold text-xs border border-emerald-200">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>ပုံမှန်ရှိသည်</span>
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        /* Batch Level Table */
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs sm:text-sm">
-              <thead>
-                <tr className="bg-indigo-700 text-white font-semibold tracking-wide">
-                  <th className="py-3 px-4 text-center border-r border-indigo-600/50">Batch ID</th>
-                  <th className="py-3 px-3 text-center border-r border-indigo-600/50">ရက်စွဲ</th>
-                  <th className="py-3 px-4 border-r border-indigo-600/50">ပစ္စည်းအမည်</th>
-                  <th className="py-3 px-3 text-right border-r border-indigo-600/50">အဝင် KG</th>
-                  <th className="py-3 px-3 text-center border-r border-indigo-600/50">
-                    Expiry Date
-                  </th>
-                  <th className="py-3 px-3 text-center border-r border-indigo-600/50">
-                    သိမ်းဆည်းနေရာ
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 text-slate-700">
-                {stockInList.map((stk, idx) => (
-                  <tr
-                    key={stk.id}
-                    className={`hover:bg-indigo-50/40 transition-colors ${
-                      idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'
-                    }`}
-                  >
-                    <td className="py-3 px-4 text-center font-bold text-indigo-700 border-r border-slate-200">
-                      {stk.batchId}
-                    </td>
-                    <td className="py-3 px-3 text-center border-r border-slate-200 text-slate-500">
-                      {stk.date}
-                    </td>
-                    <td className="py-3 px-4 border-r border-slate-200 font-medium text-slate-900">
-                      {stk.productName} ({stk.productCode})
-                    </td>
-                    <td className="py-3 px-3 text-right border-r border-slate-200 font-semibold text-slate-800">
-                      {stk.totalKg.toLocaleString()} KG
-                    </td>
-                    <td className="py-3 px-3 text-center border-r border-slate-200">
-                      <span className="inline-flex items-center gap-1 text-xs text-slate-600">
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        <span>{stk.expiryDate}</span>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr className="bg-indigo-700 text-white font-semibold tracking-wide">
+                <th className="py-3 px-4 text-center border-r border-indigo-600/50">
+                  ကုန်ပစ္စည်းကုဒ်
+                </th>
+                <th className="py-3 px-6 border-r border-indigo-600/50">ကုန်ပစ္စည်းအမည်</th>
+                <th className="py-3 px-4 text-right border-r border-indigo-600/50">
+                  အဝင် စုစုပေါင်း
+                </th>
+                <th className="py-3 px-4 text-right border-r border-indigo-600/50">
+                  အရောင်း စုစုပေါင်း
+                </th>
+                <th className="py-3 px-4 text-right border-r border-indigo-600/50">
+                  လက်ရှိစတော့ကျန်
+                </th>
+                <th className="py-3 px-4 text-center border-r border-indigo-600/50">
+                  အနည်းဆုံး သတိပေးချက်
+                </th>
+                <th className="py-3 px-4 text-center">စတော့အခြေအနေ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 text-slate-700">
+              {filteredProducts.map((item, idx) => (
+                <tr
+                  key={item.product.id}
+                  className={`hover:bg-indigo-50/40 transition-colors ${
+                    item.isLow ? 'bg-amber-50/40' : idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'
+                  }`}
+                >
+                  <td className="py-3.5 px-4 text-center font-bold text-slate-900 border-r border-slate-200">
+                    {item.product.code}
+                  </td>
+                  <td className="py-3.5 px-6 font-medium text-slate-900 border-r border-slate-200">
+                    {item.product.name}
+                  </td>
+                  <td className="py-3.5 px-4 text-right border-r border-slate-200 text-slate-600">
+                    {(item.totalIn ?? 0).toLocaleString()} {item.product.unit || 'ခု'}
+                  </td>
+                  <td className="py-3.5 px-4 text-right border-r border-slate-200 text-slate-600">
+                    {(item.totalSold ?? 0).toLocaleString()} {item.product.unit || 'ခု'}
+                  </td>
+                  <td className="py-3.5 px-4 text-right border-r border-slate-200 font-bold text-base text-indigo-700">
+                    {(item.currentStock ?? 0).toLocaleString()} {item.product.unit || 'ခု'}
+                  </td>
+                  <td className="py-3.5 px-4 text-center border-r border-slate-200 text-slate-500">
+                    {item.product.minStock ?? (item.product as any).minStockKg ?? 0} {item.product.unit || 'ခု'}
+                  </td>
+                  <td className="py-3.5 px-4 text-center">
+                    {item.isLow ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-semibold text-xs border border-rose-200">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        <span>စတော့နည်းနေသည်</span>
                       </span>
-                    </td>
-                    <td className="py-3 px-3 text-center border-r border-slate-200">
-                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs">
-                        {stk.storageLocation}
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold text-xs border border-emerald-200">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>ပုံမှန်ရှိသည်</span>
                       </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -2,33 +2,30 @@ export interface Product {
   id: string;
   code: string; // e.g. P-001
   name: string; // e.g. ထိုင်းကြက်ရင်ပုံသား
-  retailPrice: number; // လက်လီဈေး (၁-KG)
-  wholesalePrice: number; // လက်ကားဈေး (၁-KG)
-  minStockKg: number; // အနည်းဆုံးလက်ကျန် (KG)
+  retailPrice: number; // လက်လီဈေး
+  wholesalePrice: number; // လက်ကားဈေး
+  minStock: number; // အနည်းဆုံးလက်ကျန်
   category: string;
-  unit: string; // e.g. KG
+  unit: string; // e.g. ခု, ထုတ်, ပွဲ, ပုံး
 }
 
 export interface StockInRecord {
   id: string;
   date: string; // e.g. YYYY-MM-DD
-  batchId: string; // e.g. B-260712-01
   productCode: string;
   productName: string;
-  boxCount: number; // သေတ္တာ (Box)
-  totalKg: number; // စုစုပေါင်း KG
-  purchasePricePerKg: number; // ဝယ်ဈေး (၁-KG)
+  qty: number; // အရေအတွက်
+  purchasePrice: number; // ဝယ်ဈေး (၁ ခု)
   totalCost: number; // စုစုပေါင်း ကျသင့်ငွေ
   expiryDate: string; // Expiry Date
-  storageLocation: string; // သိမ်းဆည်းနေရာ (e.g. Freezer A-01)
+  storageLocation: string; // သိမ်းဆည်းနေရာ
 }
 
 export interface SaleItem {
   productCode: string;
   productName: string;
-  batchId: string;
-  weightKg: number; // အလေးချိန် (KG)
-  pricePerKg: number; // ရောင်းဈေး (KG)
+  quantity: number; // အရေအတွက် (Qty)
+  unitPrice: number; // ရောင်းဈေး
   totalAmount: number; // အသားတင်ကျသင့်ငွေ
   saleType: 'Retail' | 'Wholesale'; // လက်လီ / လက်ကား
 }
@@ -42,11 +39,11 @@ export interface SaleRecord {
   customerPhone?: string;
   saleType: 'Retail' | 'Wholesale'; // အမျိုးအစား
   items: SaleItem[];
-  totalWeightKg: number;
+  totalQty: number;
   subtotal: number;
   discount: number;
   grandTotal: number;
-  paymentMethod: 'Cash' | 'KPay' | 'Wave' | 'Credit'; // ငွေရှင်းပုံစံ (Cash, KPay, Wave, Credit (အကြွေး))
+  paymentMethod: 'Cash' | 'KPay' | 'Wave' | 'Credit'; // ငွေရှင်းပုံစံ
   cashReceived?: number;
   changeAmount?: number;
   notes?: string;
