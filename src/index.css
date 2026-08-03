@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Pyidaungsu:wght@400;700&display=swap');
+
+body {
+  font-family: 'Pyidaungsu', 'Padauk', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+@media print {
+  /* Hide all elements on the page except the printable voucher */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Pyidaungsu', 'Padauk', 'Noto Sans Myanmar', system-ui, sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Make printable voucher area visible and positioned at top left */
+  #voucher-printable-area,
+  #voucher-printable-area * {
+    visibility: visible !important;
+    font-family: 'Pyidaungsu', 'Padauk', 'Noto Sans Myanmar', system-ui, sans-serif !important;
+  }
+
+  #voucher-printable-area {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 78mm !important;
+    max-width: 80mm !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+  }
+
+  @page {
+    size: 80mm auto;
+    margin: 0mm;
+  }
+}
