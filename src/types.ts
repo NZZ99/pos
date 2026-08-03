@@ -47,6 +47,8 @@ export interface SaleRecord {
   cashReceived?: number;
   changeAmount?: number;
   notes?: string;
+  status?: 'Completed' | 'Refunded';
+  refundReason?: string;
 }
 
 export type TimePeriodFilter = 'today' | 'weekly' | 'monthly' | 'custom';

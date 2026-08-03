@@ -17,6 +17,7 @@ import {
 interface POSTabProps {
   products: Product[];
   stockInList: StockInRecord[];
+  salesList: SaleRecord[];
   onCompleteSale: (sale: SaleRecord) => void;
   onOpenVoucher: (sale: SaleRecord) => void;
 }
@@ -28,6 +29,7 @@ interface CartItem extends SaleItem {
 export const POSTab: React.FC<POSTabProps> = ({
   products,
   stockInList,
+  salesList,
   onCompleteSale,
   onOpenVoucher,
 }) => {
@@ -46,6 +48,23 @@ export const POSTab: React.FC<POSTabProps> = ({
   const [cart, setCart] = useState<CartItem[]>([]);
 
   const categories = ['All', 'ကြက်သား', 'ဆတ်သား/အမဲသား', 'ဝက်သား', 'ပင်လယ်စာ', 'ငါး / ပင်လယ်စာ'];
+
+  const getProductStock = (productCode: string) => {
+    const totalIn = stockInList
+      .filter((s) => s.productCode === productCode)
+      .reduce((sum, s) => sum + (s.qty || 0), 0);
+
+    const totalSold = salesList
+      .filter((sale) => sale.status !== 'Refunded')
+      .reduce((sum, sale) => {
+        const itemQty = sale.items
+          .filter((i) => i.productCode === productCode)
+          .reduce((sSum, item) => sSum + (item.quantity || 0), 0);
+        return sum + itemQty;
+      }, 0);
+
+    return totalIn - totalSold;
+  };
 
   const filteredProducts = products.filter((p) => {
     const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
@@ -265,18 +284,35 @@ export const POSTab: React.FC<POSTabProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {filteredProducts.map((product) => {
             const price = saleType === 'Wholesale' ? product.wholesalePrice : product.retailPrice;
+            const stock = getProductStock(product.code);
+            const isOutOfStock = stock <= 0;
+
             return (
               <button
                 key={product.id}
                 onClick={() => addToCart(product)}
-                className="bg-white p-3.5 rounded-2xl border border-slate-200 hover:border-indigo-500 hover:shadow-md transition-all text-left flex flex-col justify-between group cursor-pointer relative overflow-hidden"
+                className={`bg-white p-3.5 rounded-2xl border transition-all text-left flex flex-col justify-between group cursor-pointer relative overflow-hidden ${
+                  isOutOfStock
+                    ? 'border-slate-200 opacity-80 hover:border-amber-400'
+                    : 'border-slate-200 hover:border-indigo-500 hover:shadow-md'
+                }`}
               >
                 <div className="space-y-1">
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start gap-1">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">
                       {product.code}
                     </span>
-                    <span className="text-[10px] text-slate-400">{product.category}</span>
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        isOutOfStock
+                          ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                          : stock <= (product.minStock || 5)
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-emerald-50 text-emerald-700'
+                      }`}
+                    >
+                      {isOutOfStock ? 'စတော့ကုန်' : `ကျန်: ${stock} ${product.unit || 'ထုတ်'}`}
+                    </span>
                   </div>
                   <h4 className="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-indigo-600 transition-colors line-clamp-2">
                     {product.name}

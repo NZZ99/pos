@@ -179,16 +179,17 @@ export async function exportPOSToExcel(
 
     // Total Qty across sale items
     const totalQty = sale.totalQty ?? sale.items.reduce((acc, it) => acc + (it.quantity || 1), 0);
+    const isRefunded = sale.status === 'Refunded';
 
     row.getCell(1).value = sale.voucherNo;
     row.getCell(2).value = sale.date; // YYYY-MM-DD
     row.getCell(3).value = sale.time;
     row.getCell(4).value = sale.customerName || 'အမည်မရှိဝယ်သူ';
     row.getCell(5).value = sale.saleType === 'Retail' ? 'လက်လီ' : 'လက်ကား';
-    row.getCell(6).value = totalQty;
-    row.getCell(7).value = sale.grandTotal;
-    row.getCell(8).value = sale.paymentMethod;
-    row.getCell(9).value = sale.notes || '';
+    row.getCell(6).value = isRefunded ? 0 : totalQty;
+    row.getCell(7).value = isRefunded ? 0 : sale.grandTotal;
+    row.getCell(8).value = isRefunded ? 'Refunded' : sale.paymentMethod;
+    row.getCell(9).value = isRefunded ? `[Refunded] ${sale.refundReason || ''}` : sale.notes || '';
 
     // Formats & Alignments
     row.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
@@ -208,9 +209,18 @@ export async function exportPOSToExcel(
 
     for (let c = 1; c <= 9; c++) {
       const cell = row.getCell(c);
-      cell.font = { name: 'Segoe UI', size: 10 };
+      cell.font = {
+        name: 'Segoe UI',
+        size: 10,
+        strike: isRefunded,
+        color: isRefunded ? { argb: '94A3B8' } : { argb: '0F172A' },
+      };
       cell.border = borderStyle;
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowBg } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: isRefunded ? 'FEE2E2' : rowBg },
+      };
     }
 
     currentRowIndex++;

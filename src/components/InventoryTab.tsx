@@ -22,12 +22,14 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
       .filter((s) => s.productCode === p.code)
       .reduce((sum, s) => sum + (s.qty || 0), 0);
 
-    const totalSold = salesList.reduce((sum, sale) => {
-      const itemQty = sale.items
-        .filter((i) => i.productCode === p.code)
-        .reduce((sSum, item) => sSum + (item.quantity || 0), 0);
-      return sum + itemQty;
-    }, 0);
+    const totalSold = salesList
+      .filter((sale) => sale.status !== 'Refunded')
+      .reduce((sum, sale) => {
+        const itemQty = sale.items
+          .filter((i) => i.productCode === p.code)
+          .reduce((sSum, item) => sSum + (item.quantity || 0), 0);
+        return sum + itemQty;
+      }, 0);
 
     const currentStock = totalIn - totalSold;
     const isLow = currentStock <= (p.minStock || 0);

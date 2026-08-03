@@ -128,10 +128,24 @@ export default function App() {
   };
 
   const handleDeleteSale = (id: string) => {
-    if (window.confirm('ဤအရောင်းမှတ်တမ်းကို ဖျက်ရန် သေချာပါသလား?')) {
-      setSalesList((prev) => prev.filter((s) => s.id !== id));
-      showToast('အရောင်းမှတ်တမ်း ဖျက်ပြီးပါပြီ။');
-    }
+    setSalesList((prev) => prev.filter((s) => s.id !== id));
+    showToast('အရောင်းမှတ်တမ်း ဖျက်ပြီးပါပြီ။');
+  };
+
+  const handleRefundSale = (id: string, reason?: string) => {
+    setSalesList((prev) =>
+      prev.map((s) => {
+        if (s.id === id) {
+          return {
+            ...s,
+            status: 'Refunded',
+            refundReason: reason || 'မှားယွင်းရောင်းချမှု ပယ်ဖျက်ခြင်း/Refund ပြုလုပ်ခြင်း',
+          };
+        }
+        return s;
+      })
+    );
+    showToast('အရောင်းဘောင်ချာကို Refund ပြုလုပ်ပြီး စတော့ပြန်လည်ဖြည့်သွင်းလိုက်ပါပြီ။');
   };
 
   return (
@@ -158,6 +172,7 @@ export default function App() {
           <POSTab
             products={products}
             stockInList={stockInList}
+            salesList={salesList}
             onCompleteSale={handleCompleteSale}
             onOpenVoucher={(sale) => setActiveVoucher(sale)}
           />
@@ -194,6 +209,7 @@ export default function App() {
             salesList={salesList}
             onOpenVoucher={(sale) => setActiveVoucher(sale)}
             onDeleteSale={handleDeleteSale}
+            onRefundSale={handleRefundSale}
             onExportExcel={handleExportExcel}
           />
         )}

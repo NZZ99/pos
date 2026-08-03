@@ -84,11 +84,27 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
 
         {/* Outer Receipt Wrapper */}
         <div className="p-4 sm:p-6 bg-slate-100 flex flex-col items-center justify-center print:p-0 print:bg-white space-y-3">
+          {/* Refunded Banner */}
+          {sale.status === 'Refunded' && (
+            <div className="w-[320px] max-w-full bg-rose-50 border border-rose-300 text-rose-800 px-3 py-2 rounded-xl text-xs flex flex-col gap-0.5 font-bold print:border-rose-400">
+              <div className="flex items-center gap-1.5 text-rose-700">
+                <span>❌ ဤဘောင်ချာကို ပယ်ဖျက်ထားပါသည် (REFUNDED)</span>
+              </div>
+              {sale.refundReason && (
+                <span className="text-[11px] font-normal text-rose-600">
+                  အကြောင်းအရင်း: {sale.refundReason}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Auto-saved badge for UI confirmation */}
-          <div className="w-[320px] max-w-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs flex items-center gap-2 font-medium print:hidden">
-            <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>အရောင်းမှတ်တမ်းကို ရက်ချုပ်/နှစ်ချုပ် စာရင်းတွင် auto သိမ်းဆည်းထားပြီးပါပြီ။</span>
-          </div>
+          {sale.status !== 'Refunded' && (
+            <div className="w-[320px] max-w-full bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs flex items-center gap-2 font-medium print:hidden">
+              <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>အရောင်းမှတ်တမ်းကို ရက်ချုပ်/နှစ်ချုပ် စာရင်းတွင် auto သိမ်းဆည်းထားပြီးပါပြီ။</span>
+            </div>
+          )}
 
           {/* Printable Voucher Paper Content - Standardized for 80mm Thermal Receipt Printers */}
           <div
