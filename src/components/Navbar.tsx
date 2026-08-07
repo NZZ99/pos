@@ -8,14 +8,17 @@ import {
   Settings,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react';
-import { ShopInfo, TabLabels } from '../types';
+import { ShopInfo, TabLabels, User } from '../types';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   shopInfo: ShopInfo;
   tabLabels: TabLabels;
+  currentUser: User | null;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,6 +26,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   shopInfo,
   tabLabels,
+  currentUser,
+  onLogout,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -94,14 +99,46 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Right Side: Active Tab Indicator */}
-        <div className="flex items-center gap-2">
-          <div className="hidden md:flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/80 text-xs">
+        {/* Right Side: Active Tab Indicator + User Profile */}
+        <div className="flex items-center gap-2.5">
+          <div className="hidden lg:flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/80 text-xs">
             <span className="text-slate-400">လက်ရှိ စာမျက်နှာ:</span>
             <span className="font-bold text-indigo-300">
               {tabs.find((t) => t.id === activeTab)?.label}
             </span>
           </div>
+
+          {currentUser && (
+            <div className="flex items-center gap-2 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-xl shadow-xs">
+              {currentUser.avatarUrl ? (
+                <img
+                  src={currentUser.avatarUrl}
+                  alt={currentUser.email}
+                  className="w-5 h-5 rounded-full shrink-0"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold uppercase">
+                  {currentUser.email[0]}
+                </div>
+              )}
+              <div className="hidden sm:flex flex-col text-left">
+                <span className="text-[11px] font-bold text-slate-100 max-w-[100px] truncate leading-none">
+                  {currentUser.fullName || currentUser.email.split('@')[0]}
+                </span>
+                <span className="text-[9px] text-slate-400 max-w-[100px] truncate leading-none mt-0.5">
+                  {currentUser.email}
+                </span>
+              </div>
+              <button
+                onClick={onLogout}
+                className="p-1 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer ml-1"
+                title="စနစ်မှ ထွက်မည် (Log out)"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -133,9 +170,48 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Shop Info Summary inside Drawer */}
-            <div className="p-4 bg-slate-800/50 border-b border-slate-800">
-              <h2 className="text-xs font-bold text-indigo-300">{shopInfo.name}</h2>
-              <p className="text-[11px] text-slate-400 mt-0.5">{shopInfo.address}</p>
+            <div className="p-4 bg-slate-800/50 border-b border-slate-800 space-y-3">
+              <div>
+                <h2 className="text-xs font-bold text-indigo-300">{shopInfo.name}</h2>
+                <p className="text-[11px] text-slate-400 mt-0.5">{shopInfo.address}</p>
+              </div>
+
+              {currentUser && (
+                <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {currentUser.avatarUrl ? (
+                      <img
+                        src={currentUser.avatarUrl}
+                        alt={currentUser.email}
+                        className="w-6 h-6 rounded-full shrink-0"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold uppercase">
+                        {currentUser.email[0]}
+                      </div>
+                    )}
+                    <div className="flex flex-col text-left">
+                      <span className="text-[11px] font-bold text-slate-200 truncate max-w-[120px]">
+                        {currentUser.fullName || currentUser.email.split('@')[0]}
+                      </span>
+                      <span className="text-[9px] text-slate-400 truncate max-w-[120px]">
+                        {currentUser.email}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onLogout();
+                    }}
+                    className="p-1 text-rose-400 hover:text-rose-300 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                    title="စနစ်မှ ထွက်မည်"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Vertical Tab Links */}
@@ -173,9 +249,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </nav>
 
             {/* Drawer Footer */}
-            <div className="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center bg-slate-950/40">
-              <span>အအေးခဲ အသားငါး အရောင်းဆိုင် POS</span>
-            </div>
           </aside>
         </>
       )}

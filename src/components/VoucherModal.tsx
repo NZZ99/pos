@@ -236,14 +236,14 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
             >
-              ပိတ်မည် (Close)
+              Close
             </button>
             <button
               onClick={handlePrint}
               className="px-5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>80mm Thermal Printer ဖြင့် ရိုက်ထုတ်မည်</span>
+              <span>80mm Thermal Printer</span>
             </button>
           </div>
         </div>

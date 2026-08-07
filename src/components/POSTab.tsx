@@ -209,19 +209,19 @@ export const POSTab: React.FC<POSTabProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-6">
       {/* Left Column: Products Selector (7 cols on lg) */}
-      <div className="lg:col-span-7 space-y-4">
+      <div className="lg:col-span-7 space-y-3 lg:space-y-4">
         {/* Sale Type Switcher & Search Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-white p-3 lg:p-4 rounded-xl lg:rounded-2xl border border-slate-200 shadow-xs space-y-2.5 lg:space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-slate-700">ရောင်းဈေး အမျိုးအစား:</span>
-              <div className="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200">
+              <span className="text-[11px] sm:text-xs font-semibold text-slate-700">ရောင်းဈေး အမျိုးအစား:</span>
+              <div className="bg-slate-100 p-0.5 sm:p-1 rounded-xl flex items-center border border-slate-200">
                 <button
                   type="button"
                   onClick={() => handleToggleSaleType('Retail')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold transition-all cursor-pointer ${
                     saleType === 'Retail'
                       ? 'bg-indigo-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
@@ -232,7 +232,7 @@ export const POSTab: React.FC<POSTabProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleSaleType('Wholesale')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold transition-all cursor-pointer ${
                     saleType === 'Wholesale'
                       ? 'bg-indigo-600 text-white shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
@@ -243,45 +243,28 @@ export const POSTab: React.FC<POSTabProps> = ({
               </div>
             </div>
 
-            <div className="text-xs text-indigo-700 font-semibold bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100">
+            <div className="text-[10px] sm:text-xs text-indigo-700 font-semibold bg-indigo-50 px-2 sm:px-3 py-1 rounded-lg border border-indigo-100">
               {saleType === 'Retail' ? 'လက်လီ ဈေးနှုန်းဖြင့်' : 'လက်ကား ဈေးနှုန်းဖြင့်'}
             </div>
           </div>
 
-          {/* Search & Category pills */}
+          {/* Search bar */}
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="ကုန်ပစ္စည်း ရှာဖွေရန်..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                className="w-full pl-8.5 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               />
             </div>
-          </div>
-
-          {/* Category Pills */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1 text-xs">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1 rounded-lg font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-slate-900 text-white font-semibold'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {cat === 'All' ? 'အားလုံး' : cat}
-              </button>
-            ))}
           </div>
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
           {filteredProducts.map((product) => {
             const price = saleType === 'Wholesale' ? product.wholesalePrice : product.retailPrice;
             const stock = getProductStock(product.code);
@@ -291,19 +274,19 @@ export const POSTab: React.FC<POSTabProps> = ({
               <button
                 key={product.id}
                 onClick={() => addToCart(product)}
-                className={`bg-white p-3.5 rounded-2xl border transition-all text-left flex flex-col justify-between group cursor-pointer relative overflow-hidden ${
+                className={`bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border transition-all text-left flex flex-col justify-between group cursor-pointer relative overflow-hidden ${
                   isOutOfStock
                     ? 'border-slate-200 opacity-80 hover:border-amber-400'
                     : 'border-slate-200 hover:border-indigo-500 hover:shadow-md'
                 }`}
               >
                 <div className="space-y-1">
-                  <div className="flex justify-between items-start gap-1">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">
+                  <div className="flex flex-wrap gap-1 justify-between items-start">
+                    <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 truncate max-w-[50px] sm:max-w-none">
                       {product.code}
                     </span>
                     <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      className={`text-[9px] sm:text-[10px] font-bold px-1 py-0.5 rounded truncate ${
                         isOutOfStock
                           ? 'bg-rose-100 text-rose-700 border border-rose-200'
                           : stock <= (product.minStock || 5)
@@ -314,22 +297,22 @@ export const POSTab: React.FC<POSTabProps> = ({
                       {isOutOfStock ? 'စတော့ကုန်' : `ကျန်: ${stock} ${product.unit || 'ထုတ်'}`}
                     </span>
                   </div>
-                  <h4 className="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-indigo-600 transition-colors line-clamp-2">
+                  <h4 className="font-bold text-slate-900 text-[11px] sm:text-sm group-hover:text-indigo-600 transition-colors line-clamp-2 leading-snug">
                     {product.name}
                   </h4>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+                <div className="mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-slate-100 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-slate-400 block">
+                    <span className="text-[9px] text-slate-400 block">
                       {saleType === 'Wholesale' ? 'လက်ကားဈေး' : 'လက်လီဈေး'}
                     </span>
-                    <span className="text-xs sm:text-sm font-bold text-indigo-700">
+                    <span className="text-[11px] sm:text-sm font-bold text-indigo-700">
                       {(price ?? 0).toLocaleString()} ကျပ်
                     </span>
                   </div>
-                  <div className="w-7 h-7 rounded-xl bg-indigo-50 group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center transition-colors">
-                    <Plus className="w-4 h-4" />
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-indigo-50 group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white flex items-center justify-center transition-colors shrink-0">
+                    <Plus className="w-3 sm:w-4 h-3 sm:h-4" />
                   </div>
                 </div>
               </button>
@@ -339,15 +322,15 @@ export const POSTab: React.FC<POSTabProps> = ({
       </div>
 
       {/* Right Column: Checkout Cart & Invoice Form (5 cols on lg) */}
-      <div className="lg:col-span-5 space-y-4">
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4 flex flex-col h-full">
+      <div className="lg:col-span-5 space-y-3 lg:space-y-4">
+        <div className="bg-white rounded-xl lg:rounded-2xl border border-slate-200 shadow-xs p-3.5 lg:p-5 space-y-3 lg:space-y-4 flex flex-col h-full">
           {/* Cart Header */}
-          <div className="flex items-center justify-between border-b pb-3 border-slate-200">
-            <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-indigo-600" />
+          <div className="flex items-center justify-between border-b pb-2.5 lg:pb-3 border-slate-200">
+            <h3 className="font-bold text-slate-800 text-sm lg:text-base flex items-center gap-1.5 lg:gap-2">
+              <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5 text-indigo-600" />
               <span>ဈေးဝယ်ခြင်း စာရင်း (Cart)</span>
             </h3>
-            <span className="text-xs font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] lg:text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 lg:px-2.5 lg:py-1 rounded-full">
               {cart.length} မျိုး
             </span>
           </div>

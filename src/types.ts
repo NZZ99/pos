@@ -69,3 +69,12 @@ export interface TabLabels {
   reports: string;
   settings: string;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  isGoogleUser?: boolean;
+  avatarUrl?: string;
+  fullName?: string;
+}
+

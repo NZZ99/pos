@@ -5,7 +5,7 @@ import {
   initialSales,
   initialShopInfo,
 } from './data/initialData';
-import { Product, StockInRecord, SaleRecord, ShopInfo, TabLabels } from './types';
+import { Product, StockInRecord, SaleRecord, ShopInfo, TabLabels, User } from './types';
 import { Navbar } from './components/Navbar';
 import { POSTab } from './components/POSTab';
 import { ProductsTab } from './components/ProductsTab';
@@ -15,6 +15,7 @@ import { InventoryTab } from './components/InventoryTab';
 import { SettingsTab } from './components/SettingsTab';
 import { VoucherModal } from './components/VoucherModal';
 import { exportPOSToExcel } from './utils/excelExporter';
+import { LoginScreen } from './components/LoginScreen';
 
 const DEFAULT_TAB_LABELS: TabLabels = {
   pos: '🛒 POS အရောင်း',
@@ -25,58 +26,65 @@ const DEFAULT_TAB_LABELS: TabLabels = {
   settings: '⚙️ ပြင်ဆင်ရန်',
 };
 
-export default function App() {
-  // Persistence via localStorage
+interface MainDashboardProps {
+  key?: string;
+  currentUser: User;
+  onLogout: () => void;
+}
+
+function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
+  const suffix = `_${currentUser.email.toLowerCase()}`;
+
+  // Persistence via localStorage with user suffix
   const [shopInfo, setShopInfo] = useState<ShopInfo>(() => {
-    const saved = localStorage.getItem('cs_pos_v5_shop');
+    const saved = localStorage.getItem(`cs_pos_v5_shop${suffix}`);
     return saved ? JSON.parse(saved) : initialShopInfo;
   });
 
   const [tabLabels, setTabLabels] = useState<TabLabels>(() => {
-    const saved = localStorage.getItem('cs_pos_v5_tablabels');
+    const saved = localStorage.getItem(`cs_pos_v5_tablabels${suffix}`);
     return saved ? JSON.parse(saved) : DEFAULT_TAB_LABELS;
   });
 
   const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('cs_pos_v5_products');
+    const saved = localStorage.getItem(`cs_pos_v5_products${suffix}`);
     return saved ? JSON.parse(saved) : initialProducts;
   });
 
   const [stockInList, setStockInList] = useState<StockInRecord[]>(() => {
-    const saved = localStorage.getItem('cs_pos_v5_stockin');
+    const saved = localStorage.getItem(`cs_pos_v5_stockin${suffix}`);
     return saved ? JSON.parse(saved) : initialStockIn;
   });
 
   const [salesList, setSalesList] = useState<SaleRecord[]>(() => {
-    const saved = localStorage.getItem('cs_pos_v5_sales');
+    const saved = localStorage.getItem(`cs_pos_v5_sales${suffix}`);
     return saved ? JSON.parse(saved) : initialSales;
   });
 
   const [activeTab, setActiveTab] = useState<string>('pos');
   const [activeVoucher, setActiveVoucher] = useState<SaleRecord | null>(null);
-  const [isShopInfoOpen, setIsShopInfoOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Sync state to local storage
+  // Sync state to local storage with user suffix
   useEffect(() => {
-    localStorage.setItem('cs_pos_v5_shop', JSON.stringify(shopInfo));
-  }, [shopInfo]);
+    localStorage.setItem(`cs_pos_v5_shop${suffix}`, JSON.stringify(shopInfo));
+  }, [shopInfo, suffix]);
 
   useEffect(() => {
-    localStorage.setItem('cs_pos_v5_tablabels', JSON.stringify(tabLabels));
-  }, [tabLabels]);
+    localStorage.setItem(`cs_pos_v5_tablabels${suffix}`, JSON.stringify(tabLabels));
+  }, [tabLabels, suffix]);
 
   useEffect(() => {
-    localStorage.setItem('cs_pos_v5_products', JSON.stringify(products));
-  }, [products]);
+    localStorage.setItem(`cs_pos_v5_products${suffix}`, JSON.stringify(products));
+  }, [products, suffix]);
 
   useEffect(() => {
-    localStorage.setItem('cs_pos_v5_stockin', JSON.stringify(stockInList));
-  }, [stockInList]);
+    localStorage.setItem(`cs_pos_v5_stockin${suffix}`, JSON.stringify(stockInList));
+  }, [stockInList, suffix]);
 
   useEffect(() => {
-    localStorage.setItem('cs_pos_v5_sales', JSON.stringify(salesList));
-  }, [salesList]);
+    localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(salesList));
+  }, [salesList, suffix]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -164,6 +172,8 @@ export default function App() {
         setActiveTab={setActiveTab}
         shopInfo={shopInfo}
         tabLabels={tabLabels}
+        currentUser={currentUser}
+        onLogout={onLogout}
       />
 
       {/* Main Content Area */}
@@ -237,5 +247,58 @@ export default function App() {
         onClose={() => setActiveVoucher(null)}
       />
     </div>
+  );
+}
+
+export default function App() {
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem('cs_pos_v5_current_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('cs_pos_v5_current_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('cs_pos_v5_current_user');
+    }
+  }, [currentUser]);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    showToast('စနစ်မှ ထွက်လိုက်ပါပြီ။');
+  };
+
+  if (!currentUser) {
+    return (
+      <LoginScreen
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+        }}
+      />
+    );
+  }
+
+  return (
+    <>
+      {toastMessage && (
+        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 border border-slate-700 animate-bounce">
+          <span>✅</span>
+          <span>{toastMessage}</span>
+        </div>
+      )}
+      <MainDashboard
+        key={currentUser.email}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
+    </>
   );
 }
