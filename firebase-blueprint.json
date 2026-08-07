@@ -1,0 +1,129 @@
+{
+  "entities": {
+    "UserPreferences": {
+      "title": "UserPreferences",
+      "description": "User profile, shop settings, and tab labels configuration",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "fullName": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "shopInfo": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "tagline": { "type": "string" },
+            "address": { "type": "string" },
+            "phone": { "type": "string" },
+            "voucherNote": { "type": "string" }
+          },
+          "required": ["name", "tagline", "address", "phone", "voucherNote"]
+        },
+        "tabLabels": {
+          "type": "object",
+          "properties": {
+            "pos": { "type": "string" },
+            "products": { "type": "string" },
+            "stockIn": { "type": "string" },
+            "inventory": { "type": "string" },
+            "reports": { "type": "string" },
+            "settings": { "type": "string" }
+          },
+          "required": ["pos", "products", "stockIn", "inventory", "reports", "settings"]
+        }
+      },
+      "required": ["email"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Information about a product in inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "retailPrice": { "type": "number" },
+        "wholesalePrice": { "type": "number" },
+        "minStock": { "type": "number" },
+        "category": { "type": "string" },
+        "unit": { "type": "string" }
+      },
+      "required": ["id", "code", "name", "retailPrice", "wholesalePrice", "category", "unit"]
+    },
+    "StockInRecord": {
+      "title": "StockInRecord",
+      "description": "Record of stocking in items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "productCode": { "type": "string" },
+        "productName": { "type": "string" },
+        "qty": { "type": "number" },
+        "purchasePrice": { "type": "number" },
+        "totalCost": { "type": "number" },
+        "expiryDate": { "type": "string" },
+        "storageLocation": { "type": "string" }
+      },
+      "required": ["id", "date", "productCode", "productName", "qty", "purchasePrice", "totalCost"]
+    },
+    "SaleRecord": {
+      "title": "SaleRecord",
+      "description": "Completed transaction record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "voucherNo": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "saleType": { "type": "string", "enum": ["Retail", "Wholesale"] },
+        "totalQty": { "type": "number" },
+        "subtotal": { "type": "number" },
+        "discount": { "type": "number" },
+        "grandTotal": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "cashReceived": { "type": "number" },
+        "changeAmount": { "type": "number" },
+        "notes": { "type": "string" },
+        "status": { "type": "string" },
+        "refundReason": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "productCode": { "type": "string" },
+              "productName": { "type": "string" },
+              "quantity": { "type": "number" },
+              "unitPrice": { "type": "number" },
+              "totalAmount": { "type": "number" },
+              "saleType": { "type": "string" }
+            },
+            "required": ["productCode", "productName", "quantity", "unitPrice", "totalAmount"]
+          }
+        }
+      },
+      "required": ["id", "voucherNo", "date", "time", "saleType", "totalQty", "subtotal", "grandTotal", "paymentMethod", "items"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "UserPreferences",
+      "description": "User profile, shop name and configurations"
+    },
+    "users/{userId}/products/{productId}": {
+      "schema": "Product",
+      "description": "Products list belonging to the user"
+    },
+    "users/{userId}/stockIn/{recordId}": {
+      "schema": "StockInRecord",
+      "description": "Stock-in history records belonging to the user"
+    },
+    "users/{userId}/sales/{saleId}": {
+      "schema": "SaleRecord",
+      "description": "Sales and vouchers history belonging to the user"
+    }
+  }
+}

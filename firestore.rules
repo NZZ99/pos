@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    // Rules for User document
+    match /users/{userId} {
+      allow read, write: if isValidId(userId);
+
+      // Rules for Products sub-collection
+      match /products/{productId} {
+        allow read, write: if isValidId(userId);
+      }
+
+      // Rules for StockIn sub-collection
+      match /stockIn/{recordId} {
+        allow read, write: if isValidId(userId);
+      }
+
+      // Rules for Sales sub-collection
+      match /sales/{saleId} {
+        allow read, write: if isValidId(userId);
+      }
+    }
+  }
+}

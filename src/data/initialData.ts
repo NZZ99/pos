@@ -1,7 +1,7 @@
 import { Product, StockInRecord, SaleRecord, ShopInfo } from '../types';
 
 export const initialShopInfo: ShopInfo = {
-  name: "အအေးခဲ အသားငါး အရောင်းဆိုင် (တောင်ကြီးမြို့) စားသောက်ဆိုင်",
+  name: "TCO Fresh အအေးခဲ အသားငါး အရောင်းဆိုင်",
   tagline: "လတ်ဆတ်သန့်ရှင်းသော အသားစုံနှင့် စားသောက်ဖွယ်ရာများ",
   address: "အမှတ် (၁၂)၊ ဘိုချုပ်လမ်း၊ တောင်ကြီးမြို့။",
   phone: "09-123456789, 09-987654321",
