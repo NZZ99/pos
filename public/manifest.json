@@ -1,22 +1,22 @@
 {
-  "short_name": "အအေးခဲPOS",
-  "name": "အအေးခဲ အသားငါး အရောင်းဆိုင် (တောင်ကြီးမြို့) POS",
-  "description": "အအေးခဲ အသားငါး အရောင်းဆိုင် POS အရောင်းနှင့် စတော့ စီမံခန့်ခွဲမှု စနစ်",
+  "short_name": "TCO Fresh",
+  "name": "TCO Fresh",
+  "description": "TCO Fresh အအေးခဲ အသားငါး အရောင်းဆိုင်",
   "icons": [
     {
-      "src": "pwa-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "pwa-512.png",
+      "src": "https://i.postimg.cc/k4J6TJsw/Chat-GPT-Image-Aug-8-2026-10-27-14-AM.png",
       "type": "image/png",
       "sizes": "512x512"
+    },
+    {
+      "src": "https://i.postimg.cc/k4J6TJsw/Chat-GPT-Image-Aug-8-2026-10-27-14-AM.png",
+      "type": "image/png",
+      "sizes": "192x192"
     }
   ],
   "start_url": "/",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#D3EFE0",
+  "theme_color": "#0D5C1E",
   "display": "standalone",
   "orientation": "any"
 }

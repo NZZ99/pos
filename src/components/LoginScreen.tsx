@@ -407,19 +407,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                     </div>
                   </button>
 
-                  {/* Account 2: Demo/Guest Account */}
-                  <button
-                    onClick={() => handleGoogleLogin('pos.guest.retailer@gmail.com')}
-                    className="w-full p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 transition-all flex items-center gap-3 text-left cursor-pointer hover:border-slate-300"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-extrabold text-xs">
-                      P
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-800 truncate">POS Guest User</p>
-                      <p className="text-[10px] text-slate-400 truncate">pos.guest.retailer@gmail.com</p>
-                    </div>
-                  </button>
+
 
                   {/* Custom email option */}
                   <div className="p-3 border-t border-slate-100 mt-2 space-y-1.5">

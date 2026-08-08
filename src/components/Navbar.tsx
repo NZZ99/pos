@@ -40,7 +40,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     },
     {
       id: 'products',
-      label: tabLabels.products || '📦 ပစ္စည်းမော်ဒယ်ဇယား',
+      label: tabLabels.products || '📦 ပစ္စည်းစာရင်း',
       sublabel: 'Products Master',
       icon: Package,
     },

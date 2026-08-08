@@ -18,7 +18,7 @@ export interface StockInRecord {
   purchasePrice: number; // ဝယ်ဈေး (၁ ခု)
   totalCost: number; // စုစုပေါင်း ကျသင့်ငွေ
   expiryDate: string; // Expiry Date
-  storageLocation: string; // သိမ်းဆည်းနေရာ
+  storageLocation?: string; // သိမ်းဆည်းနေရာ
 }
 
 export interface SaleItem {

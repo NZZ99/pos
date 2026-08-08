@@ -21,7 +21,7 @@ import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, updateDoc } from '
 
 const DEFAULT_TAB_LABELS: TabLabels = {
   pos: '🛒 POS အရောင်း',
-  products: '📦 ပစ္စည်းမော်ဒယ်ဇယား',
+  products: '📦 ပစ္စည်းစာရင်း',
   stockIn: '📥 ပစ္စည်းအဝင်စာရင်း',
   inventory: '🧊 စတော့ကျန် စာရင်း',
   reports: '📊 အရောင်း အစီရင်ခံစာ',
@@ -48,7 +48,18 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
 
   const [tabLabels, setTabLabels] = useState<TabLabels>(() => {
     const saved = localStorage.getItem(`cs_pos_v5_tablabels${suffix}`);
-    return saved ? JSON.parse(saved) : DEFAULT_TAB_LABELS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.products === '📦 ပစ္စည်းမော်ဒယ်ဇယား') {
+          parsed.products = '📦 ပစ္စည်းစာရင်း';
+        }
+        return parsed;
+      } catch (e) {
+        return DEFAULT_TAB_LABELS;
+      }
+    }
+    return DEFAULT_TAB_LABELS;
   });
 
   const [products, setProducts] = useState<Product[]>(() => {
@@ -89,8 +100,16 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
             localStorage.setItem(`cs_pos_v5_shop${suffix}`, JSON.stringify(userData.shopInfo));
           }
           if (userData.tabLabels) {
-            setTabLabels(userData.tabLabels);
-            localStorage.setItem(`cs_pos_v5_tablabels${suffix}`, JSON.stringify(userData.tabLabels));
+            const labels = { ...userData.tabLabels };
+            if (labels.products === '📦 ပစ္စည်းမော်ဒယ်ဇယား') {
+              labels.products = '📦 ပစ္စည်းစာရင်း';
+              // Update in Firestore asynchronously so they don't load the old label again
+              updateDoc(userRef, { tabLabels: labels }).catch(err => {
+                console.error("Failed to update migrated tab labels in Firestore", err);
+              });
+            }
+            setTabLabels(labels);
+            localStorage.setItem(`cs_pos_v5_tablabels${suffix}`, JSON.stringify(labels));
           }
 
           // Fetch products
@@ -332,8 +351,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
             </div>
-            <p className="text-xs font-bold text-slate-700">အချက်အလက်များကို Cloud (Firebase) မှ ဆွဲယူနေပါသည်...</p>
-            <p className="text-[10px] text-slate-400">စက္ကန့်အနည်းငယ် စောင့်ဆိုင်းပေးပါ...</p>
+            <p className="text-xs font-bold text-slate-700 animate-pulse">Loading...</p>
           </div>
         </div>
       )}

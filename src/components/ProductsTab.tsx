@@ -100,7 +100,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-            <span>ကုန်ပစ္စည်း မော်ဒယ်/မာစတာ ဇယား</span>
+            <span>ပစ္စည်းစာရင်း</span>
             <span className="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2.5 py-0.5 rounded-full">
               {products.length} Items
             </span>
