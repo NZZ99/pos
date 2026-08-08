@@ -120,6 +120,19 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
           if (prodSnap && active) {
             const list: Product[] = [];
             prodSnap.forEach(d => list.push(d.data() as Product));
+            
+            // Merge local products not in Firestore
+            const localSaved = localStorage.getItem(`cs_pos_v5_products${suffix}`);
+            if (localSaved) {
+              const localList = JSON.parse(localSaved) as Product[];
+              const fIds = new Set(list.map(i => i.id));
+              const missing = localList.filter(i => !fIds.has(i.id));
+              if (missing.length > 0) {
+                list.push(...missing);
+                missing.forEach(p => setDoc(doc(db, 'users', encodedEmail, 'products', p.id), p).catch(console.error));
+              }
+            }
+            
             setProducts(list);
             localStorage.setItem(`cs_pos_v5_products${suffix}`, JSON.stringify(list));
           }
@@ -132,6 +145,20 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
           if (stockSnap && active) {
             const list: StockInRecord[] = [];
             stockSnap.forEach(d => list.push(d.data() as StockInRecord));
+            
+            // Merge local stock not in Firestore
+            const localSaved = localStorage.getItem(`cs_pos_v5_stockin${suffix}`);
+            if (localSaved) {
+              const localList = JSON.parse(localSaved) as StockInRecord[];
+              const fIds = new Set(list.map(i => i.id));
+              const missing = localList.filter(i => !fIds.has(i.id));
+              if (missing.length > 0) {
+                list.push(...missing);
+                missing.forEach(s => setDoc(doc(db, 'users', encodedEmail, 'stockIn', s.id), s).catch(console.error));
+              }
+            }
+            
+            list.sort((a, b) => b.id.localeCompare(a.id));
             setStockInList(list);
             localStorage.setItem(`cs_pos_v5_stockin${suffix}`, JSON.stringify(list));
           }
@@ -144,6 +171,21 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
           if (salesSnap && active) {
             const list: SaleRecord[] = [];
             salesSnap.forEach(d => list.push(d.data() as SaleRecord));
+            
+            // Merge local sales not in Firestore (created offline)
+            const localSaved = localStorage.getItem(`cs_pos_v5_sales${suffix}`);
+            if (localSaved) {
+              const localList = JSON.parse(localSaved) as SaleRecord[];
+              const fIds = new Set(list.map(i => i.id));
+              const missing = localList.filter(i => !fIds.has(i.id));
+              if (missing.length > 0) {
+                list.push(...missing);
+                missing.forEach(s => setDoc(doc(db, 'users', encodedEmail, 'sales', s.id), s).catch(console.error));
+              }
+            }
+            
+            // Sort by id descending so newest is at the top
+            list.sort((a, b) => b.id.localeCompare(a.id));
             setSalesList(list);
             localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(list));
           }
