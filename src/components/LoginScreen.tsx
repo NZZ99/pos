@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, CheckSquare, Square, RefreshCw, LogIn, UserPlus } from 'lucide-react';
 import { User } from '../types';
+import { db } from '../firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface LoginScreenProps {
   onLoginSuccess: (user: User) => void;
@@ -28,12 +30,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     return defaultUsers;
   };
 
-  const handleEmailAuth = (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    if (!email) {
+    const cleanEmail = email.trim().toLowerCase();
+    
+    if (!cleanEmail) {
       setError('Email ကို ထည့်သွင်းပေးပါ။');
       return;
     }
@@ -42,49 +46,84 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       return;
     }
 
-    const users = getLocalUsers();
+    const encodedEmail = cleanEmail.replace(/[^a-zA-Z0-9_]/g, '_');
+    
+    try {
+      const userRef = doc(db, 'users', encodedEmail);
+      const userSnap = await getDoc(userRef);
+      
+      if (isSignUp) {
+        if (password !== confirmPassword) {
+          setError('စကားဝှက်များ တူညီမှုမရှိပါ။');
+          return;
+        }
+        if (password.length < 6) {
+          setError('စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။');
+          return;
+        }
+        
+        const existingPassword = userSnap.exists() ? userSnap.data().password : null;
+        
+        if (existingPassword && existingPassword !== 'google-oauth-session') {
+          setError('ဤ Email ဖြင့် အကောင့်ဖွင့်ပြီးသား ဖြစ်နေသည်။');
+          return;
+        }
 
-    if (isSignUp) {
-      if (password !== confirmPassword) {
-        setError('စကားဝှက်များ တူညီမှုမရှိပါ။');
-        return;
-      }
-      if (password.length < 6) {
-        setError('စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။');
-        return;
-      }
-      if (users[email.toLowerCase()]) {
-        setError('ဤ Email ဖြင့် အကောင့်ဖွင့်ပြီးသား ဖြစ်နေသည်။');
-        return;
-      }
+        // Save new user to Firestore
+        await setDoc(userRef, { password }, { merge: true });
+        
+        // Also save to local storage for fallback
+        const users = getLocalUsers();
+        users[cleanEmail] = password;
+        localStorage.setItem('cs_pos_v5_local_users', JSON.stringify(users));
 
-      // Save new user
-      users[email.toLowerCase()] = password;
-      localStorage.setItem('cs_pos_v5_local_users', JSON.stringify(users));
+        setSuccess('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။');
+        setTimeout(() => {
+          setIsSignUp(false);
+          setPassword('');
+          setConfirmPassword('');
+        }, 1500);
+      } else {
+        // Login
+        let storedPassword = null;
+        
+        if (userSnap.exists()) {
+          storedPassword = userSnap.data().password;
+        }
+        
+        // Fallback to local storage if not in Firestore (migration)
+        if (!storedPassword) {
+          const users = getLocalUsers();
+          storedPassword = users[cleanEmail];
+          // If we found it in local storage but not Firestore, migrate it to Firestore
+          if (storedPassword) {
+            await setDoc(userRef, { password: storedPassword }, { merge: true }).catch(console.error);
+          }
+        }
 
-      setSuccess('အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။');
-      setTimeout(() => {
-        setIsSignUp(false);
-        setPassword('');
-        setConfirmPassword('');
-      }, 1500);
-    } else {
-      const storedPassword = users[email.toLowerCase()];
-      if (!storedPassword || storedPassword !== password) {
-        setError('Email သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။ (Default: admin@gmail.com / password123)');
-        return;
+        if (!storedPassword || storedPassword !== password) {
+          if (storedPassword === 'google-oauth-session') {
+            setError('ဤအကောင့်သည် ယခင်က Google ဖြင့်ဝင်ရောက်ခဲ့ပါသည်။ စကားဝှက်အသစ်သတ်မှတ်ရန် Sign Up ပြန်လုပ်ပေးပါ။');
+          } else {
+            setError('Email သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
+          }
+          return;
+        }
+
+        // Success
+        const loggedUser: User = {
+          id: `u-${Date.now()}`,
+          email: cleanEmail,
+          fullName: cleanEmail.split('@')[0],
+        };
+        setSuccess('စနစ်ထဲသို့ ဝင်ရောက်နေပါသည်...');
+        setTimeout(() => {
+          onLoginSuccess(loggedUser);
+        }, 1000);
       }
-
-      // Success
-      const loggedUser: User = {
-        id: `u-${Date.now()}`,
-        email: email.toLowerCase(),
-        fullName: email.split('@')[0],
-      };
-      setSuccess('စနစ်ထဲသို့ ဝင်ရောက်နေပါသည်...');
-      setTimeout(() => {
-        onLoginSuccess(loggedUser);
-      }, 1000);
+    } catch (err) {
+      console.error("Auth error:", err);
+      setError('ဆက်သွယ်မှု အမှားအယွင်းဖြစ်နေပါသည်။');
     }
   };
 
