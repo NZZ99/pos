@@ -108,11 +108,11 @@ export async function exportPOSToExcel(
 
   // Row 7-9: Formula Summary Cards (Today / This Week / This Month / This Year / All Time)
   const summaryCards = [
-    { title: 'ဒီနေ့ အရောင်း (Daily)', cellRange: 'A7:B8', valCell: 'A8', labelCell: 'A7', color: 'DBEAFE', formula: '=SUMIF(B15:B5000, B5, G15:G5000)' },
-    { title: 'ဒီအပတ် အရောင်း (Weekly)', cellRange: 'C7:D8', valCell: 'C8', labelCell: 'C7', color: 'DCFCE7', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&(DATEVALUE(B5)-WEEKDAY(DATEVALUE(B5),2)+1), B15:B5000, "<="&(DATEVALUE(B5)-WEEKDAY(DATEVALUE(B5),2)+7))' },
-    { title: 'ဒီလ အရောင်း (Monthly)', cellRange: 'E7:F8', valCell: 'E8', labelCell: 'E7', color: 'FEF3C7', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&DATE(YEAR(DATEVALUE(B5)),MONTH(DATEVALUE(B5)),1), B15:B5000, "<="&EOMONTH(DATEVALUE(B5),0))' },
-    { title: 'ဒီနှစ် အရောင်း (Yearly)', cellRange: 'G7:H8', valCell: 'G8', labelCell: 'G7', color: 'F3E8FF', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&DATE(YEAR(DATEVALUE(B5)),1,1), B15:B5000, "<="&DATE(YEAR(DATEVALUE(B5)),12,31))' },
-    { title: 'စုစုပေါင်း အရောင်း (Total)', cellRange: 'I7:I8', valCell: 'I8', labelCell: 'I7', color: 'E0E7FF', formula: '=SUM(G15:G5000)' },
+    { title: 'Daily', cellRange: 'A7:B8', valCell: 'A8', labelCell: 'A7', color: 'DBEAFE', formula: '=SUMIF(B15:B5000, B5, G15:G5000)' },
+    { title: 'Weekly', cellRange: 'C7:D8', valCell: 'C8', labelCell: 'C7', color: 'DCFCE7', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&(DATEVALUE(B5)-WEEKDAY(DATEVALUE(B5),2)+1), B15:B5000, "<="&(DATEVALUE(B5)-WEEKDAY(DATEVALUE(B5),2)+7))' },
+    { title: 'Monthly', cellRange: 'E7:F8', valCell: 'E8', labelCell: 'E7', color: 'FEF3C7', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&DATE(YEAR(DATEVALUE(B5)),MONTH(DATEVALUE(B5)),1), B15:B5000, "<="&EOMONTH(DATEVALUE(B5),0))' },
+    { title: 'Yearly', cellRange: 'G7:H8', valCell: 'G8', labelCell: 'G7', color: 'F3E8FF', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&DATE(YEAR(DATEVALUE(B5)),1,1), B15:B5000, "<="&DATE(YEAR(DATEVALUE(B5)),12,31))' },
+    { title: 'Total', cellRange: 'I7:I8', valCell: 'I8', labelCell: 'I7', color: 'E0E7FF', formula: '=SUM(A8+C8+E8+G8)' },
   ];
 
   summaryCards.forEach((card) => {
