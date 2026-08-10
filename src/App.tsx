@@ -16,7 +16,7 @@ import { SettingsTab } from './components/SettingsTab';
 import { VoucherModal } from './components/VoucherModal';
 import { exportPOSToExcel } from './utils/excelExporter';
 import { LoginScreen } from './components/LoginScreen';
-import { db, handleFirestoreError, OperationType } from './firebase';
+import { db, handleFirestoreError, OperationType, sanitizeForFirestore } from './firebase';
 import { doc, getDoc, setDoc, deleteDoc, collection, getDocs, updateDoc } from 'firebase/firestore';
 
 const DEFAULT_TAB_LABELS: TabLabels = {
@@ -129,7 +129,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
               const missing = localList.filter(i => !fIds.has(i.id));
               if (missing.length > 0) {
                 list.push(...missing);
-                missing.forEach(p => setDoc(doc(db, 'users', encodedEmail, 'products', p.id), p).catch(console.error));
+                missing.forEach(p => setDoc(doc(db, 'users', encodedEmail, 'products', p.id), sanitizeForFirestore(p)).catch(console.error));
               }
             }
             
@@ -154,7 +154,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
               const missing = localList.filter(i => !fIds.has(i.id));
               if (missing.length > 0) {
                 list.push(...missing);
-                missing.forEach(s => setDoc(doc(db, 'users', encodedEmail, 'stockIn', s.id), s).catch(console.error));
+                missing.forEach(s => setDoc(doc(db, 'users', encodedEmail, 'stockIn', s.id), sanitizeForFirestore(s)).catch(console.error));
               }
             }
             
@@ -180,7 +180,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
               const missing = localList.filter(i => !fIds.has(i.id));
               if (missing.length > 0) {
                 list.push(...missing);
-                missing.forEach(s => setDoc(doc(db, 'users', encodedEmail, 'sales', s.id), s).catch(console.error));
+                missing.forEach(s => setDoc(doc(db, 'users', encodedEmail, 'sales', s.id), sanitizeForFirestore(s)).catch(console.error));
               }
             }
             
@@ -191,33 +191,33 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
           }
         } else {
           // If user does not exist in Firebase, upload existing/initial state as first-time setup
-          await setDoc(userRef, {
+          await setDoc(userRef, sanitizeForFirestore({
             email: currentUser.email,
             fullName: currentUser.fullName || '',
             avatarUrl: currentUser.avatarUrl || '',
             shopInfo: shopInfo,
             tabLabels: tabLabels,
-          }).catch(err => {
+          })).catch(err => {
             handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}`);
           });
 
           // Upload products
           for (const p of products) {
-            await setDoc(doc(db, 'users', encodedEmail, 'products', p.id), p).catch(err => {
+            await setDoc(doc(db, 'users', encodedEmail, 'products', p.id), sanitizeForFirestore(p)).catch(err => {
               handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/products/${p.id}`);
             });
           }
 
           // Upload stock records
           for (const s of stockInList) {
-            await setDoc(doc(db, 'users', encodedEmail, 'stockIn', s.id), s).catch(err => {
+            await setDoc(doc(db, 'users', encodedEmail, 'stockIn', s.id), sanitizeForFirestore(s)).catch(err => {
               handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/stockIn/${s.id}`);
             });
           }
 
           // Upload sale records
           for (const s of salesList) {
-            await setDoc(doc(db, 'users', encodedEmail, 'sales', s.id), s).catch(err => {
+            await setDoc(doc(db, 'users', encodedEmail, 'sales', s.id), sanitizeForFirestore(s)).catch(err => {
               handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/sales/${s.id}`);
             });
           }
@@ -254,7 +254,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     setProducts(nextProds);
     localStorage.setItem(`cs_pos_v5_products${suffix}`, JSON.stringify(nextProds));
     try {
-      await setDoc(doc(db, 'users', encodedEmail, 'products', p.id), p).catch(err => {
+      await setDoc(doc(db, 'users', encodedEmail, 'products', p.id), sanitizeForFirestore(p)).catch(err => {
         handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/products/${p.id}`);
       });
       showToast(`ကုန်ပစ္စည်း (${p.name}) ထည့်သွင်းပြီးပါပြီ။`);
@@ -268,7 +268,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     setProducts(nextProds);
     localStorage.setItem(`cs_pos_v5_products${suffix}`, JSON.stringify(nextProds));
     try {
-      await setDoc(doc(db, 'users', encodedEmail, 'products', updated.id), updated).catch(err => {
+      await setDoc(doc(db, 'users', encodedEmail, 'products', updated.id), sanitizeForFirestore(updated)).catch(err => {
         handleFirestoreError(err, OperationType.UPDATE, `users/${encodedEmail}/products/${updated.id}`);
       });
       showToast(`ကုန်ပစ္စည်း (${updated.name}) ပြင်ဆင်ပြီးပါပြီ။`);
@@ -300,7 +300,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     setStockInList(nextStock);
     localStorage.setItem(`cs_pos_v5_stockin${suffix}`, JSON.stringify(nextStock));
     try {
-      await setDoc(doc(db, 'users', encodedEmail, 'stockIn', stk.id), stk).catch(err => {
+      await setDoc(doc(db, 'users', encodedEmail, 'stockIn', stk.id), sanitizeForFirestore(stk)).catch(err => {
         handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/stockIn/${stk.id}`);
       });
       showToast(`ပစ္စည်းအဝင် (${stk.productName}) ထည့်သွင်းပြီးပါပြီ။`);
@@ -331,7 +331,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     setSalesList(nextSales);
     localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(nextSales));
     try {
-      await setDoc(doc(db, 'users', encodedEmail, 'sales', sale.id), sale).catch(err => {
+      await setDoc(doc(db, 'users', encodedEmail, 'sales', sale.id), sanitizeForFirestore(sale)).catch(err => {
         handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/sales/${sale.id}`);
       });
       showToast(`အရောင်းဘောင်ချာ (${sale.voucherNo}) ငွေရှင်းပြီး စာရင်းသွင်းပြီးပါပြီ။`);
@@ -471,7 +471,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
               setShopInfo(newInfo);
               localStorage.setItem(`cs_pos_v5_shop${suffix}`, JSON.stringify(newInfo));
               try {
-                await setDoc(doc(db, 'users', encodedEmail), { shopInfo: newInfo }, { merge: true }).catch(err => {
+                await setDoc(doc(db, 'users', encodedEmail), sanitizeForFirestore({ shopInfo: newInfo }), { merge: true }).catch(err => {
                   handleFirestoreError(err, OperationType.WRITE, `users/${encodedEmail}`);
                 });
                 showToast('ဆိုင်အချက်အလက်များ သိမ်းဆည်းပြီးပါပြီ။');
@@ -484,7 +484,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
               setTabLabels(newLabels);
               localStorage.setItem(`cs_pos_v5_tablabels${suffix}`, JSON.stringify(newLabels));
               try {
-                await setDoc(doc(db, 'users', encodedEmail), { tabLabels: newLabels }, { merge: true }).catch(err => {
+                await setDoc(doc(db, 'users', encodedEmail), sanitizeForFirestore({ tabLabels: newLabels }), { merge: true }).catch(err => {
                   handleFirestoreError(err, OperationType.WRITE, `users/${encodedEmail}`);
                 });
                 showToast('Tab အမည်များကို အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။');

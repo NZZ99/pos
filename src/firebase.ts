@@ -56,4 +56,9 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
+export function sanitizeForFirestore<T>(obj: T): T {
+  if (obj === undefined) return obj;
+  return JSON.parse(JSON.stringify(obj));
+}
+
 export { signInWithPopup, signOut };

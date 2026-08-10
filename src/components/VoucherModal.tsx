@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SaleRecord, ShopInfo } from '../types';
-import { Printer, X, CheckCircle, FileText, Smartphone } from 'lucide-react';
+import { Printer, X, CheckCircle, FileText, Smartphone, Phone, Mail, MapPin, Globe } from 'lucide-react';
 
 interface VoucherModalProps {
   sale: SaleRecord | null;
@@ -23,7 +23,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden my-6">
+      <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all ${printSize === 'A4' ? 'max-w-4xl' : 'max-w-lg'}`}>
         {/* Top Header Actions Bar (Hidden on Print) */}
         <div className="bg-indigo-900 px-5 py-3.5 text-white flex flex-wrap items-center justify-between gap-3 border-b border-indigo-800 print:hidden">
           <div className="flex items-center gap-2">
@@ -33,7 +33,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             <div>
               <h3 className="font-bold text-sm sm:text-base">အရောင်း ဘောင်ချာ (Voucher)</h3>
               <p className="text-[11px] text-indigo-200">
-                80mm Thermal Receipt Printer Size
+                {printSize === 'A4' ? 'A4 Invoice Size' : '80mm Thermal Receipt Printer Size'}
               </p>
             </div>
           </div>
@@ -92,7 +92,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               </div>
               {sale.refundReason && (
                 <span className="text-[11px] font-normal text-rose-600">
-                  အကြောင်းအရင်း: {sale.refundReason}
+                  အကြောင်းရင်း - {sale.refundReason}
                 </span>
               )}
             </div>
@@ -106,122 +106,238 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             </div>
           )}
 
-          {/* Printable Voucher Paper Content - Standardized for 80mm Thermal Receipt Printers */}
-          <div
-            className={`bg-white text-slate-900 shadow-md border border-slate-200 p-4 print:p-0 print:border-none print:shadow-none transition-all ${
-              printSize === '80mm' ? 'w-[320px] font-sans text-xs leading-normal' : 'w-full font-sans text-xs leading-normal'
-            }`}
-            id="voucher-printable-area"
-          >
-            {/* Shop Branding */}
-            <div className="text-center pb-3 border-b border-dashed border-slate-400">
-              <h1 className="text-base sm:text-lg font-bold text-slate-900 uppercase tracking-tight">
-                {shopInfo.name}
-              </h1>
-              <p className="text-[11px] text-slate-700 font-sans mt-0.5">{shopInfo.tagline}</p>
-              <p className="text-[11px] text-slate-700 font-sans mt-0.5">{shopInfo.address}</p>
-              <p className="text-[11px] text-slate-800 font-semibold mt-0.5">
-                ဖုန်း - {shopInfo.phone}
-              </p>
-            </div>
-
-            {/* Voucher Metadata Grid */}
-            <div className="py-2.5 border-b border-dashed border-slate-400 text-[11px] space-y-1">
-              <div className="flex justify-between">
-                <span className="text-slate-600">ဘောင်ချာနံပါတ်:</span>
-                <span className="font-bold text-slate-900">{sale.voucherNo}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">ရက်စွဲ/အချိန်:</span>
-                <span className="font-medium text-slate-900">
-                  {sale.date} {sale.time ? `(${sale.time})` : ''}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">ဝယ်သူအမည်:</span>
-                <span className="font-bold text-slate-900">{sale.customerName || 'အထွေထွေ'}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-600">အမျိုးအစား/ငွေရှင်း:</span>
-                <span className="font-semibold text-slate-900">
-                  {sale.saleType === 'Wholesale' ? 'လက်ကား' : 'လက်လီ'} / {sale.paymentMethod}
-                </span>
-              </div>
-            </div>
-
-            {/* Itemized Receipt Table (80mm Thermal optimized layout) */}
-            <div className="py-2.5 border-b border-dashed border-slate-400">
-              <div className="flex justify-between font-bold text-[11px] text-slate-800 border-b border-slate-300 pb-1 mb-1.5">
-                <span className="text-left">ပစ္စည်း / အသေးစိတ်</span>
-                <span className="text-right">ကျသင့်ငွေ</span>
-              </div>
-              <div className="space-y-2 text-[11px]">
-                {sale.items.map((item, idx) => (
-                  <div key={idx} className="space-y-0.5">
-                    <div className="font-semibold text-slate-950 flex justify-between items-start gap-1">
-                      <span className="text-left leading-tight break-words flex-1">{item.productName}</span>
-                      <span className="text-right font-bold shrink-0 text-slate-900 min-w-[70px]">
-                        {(item.totalAmount ?? 0).toLocaleString()}
-                      </span>
+          {/* Printable Voucher Paper Content */}
+          {printSize === 'A4' ? (
+            <div className="w-full overflow-x-auto bg-slate-100 p-4 sm:p-8 flex justify-center print:p-0 print:bg-white print:overflow-visible">
+              <div 
+                className="bg-white w-[210mm] min-h-[297mm] shrink-0 relative overflow-hidden print:w-[210mm] print:min-h-[297mm] print:border-none border border-slate-200 shadow-md font-sans text-slate-900 flex flex-col mx-auto" 
+                id="voucher-printable-area"
+                style={{ 
+                  backgroundImage: "url('https://i.postimg.cc/BnMDmH0x/Colorful-minimal-layout-with-blank-white-space-for-adding-elements-Premium-Vector.jpg')", 
+                  backgroundSize: '100% 100%', 
+                  backgroundPosition: 'center', 
+                  backgroundRepeat: 'no-repeat' 
+                }}
+              >
+                
+              <div className="relative z-10 flex flex-col h-full p-10 sm:p-14 print:p-12 flex-1">
+                {/* Header */}
+                <div className="flex justify-between items-start mb-10">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                       <h1 className="text-3xl font-bold text-[#333B4F] tracking-tight">{shopInfo.name}</h1>
                     </div>
-                    <div className="text-[10px] text-slate-600 pl-0.5">
-                      <span>
-                        {(item.quantity ?? (item as any).weightKg ?? 1)} x {(item.unitPrice ?? (item as any).pricePerKg ?? 0).toLocaleString()} ကျပ်
-                      </span>
-                    </div>
+                    <p className="text-sm text-slate-500 font-medium tracking-widest uppercase">{shopInfo.tagline}</p>
                   </div>
-                ))}
+                  <div className="text-right mt-2">
+                     <h2 className="text-4xl font-light text-[#333B4F] tracking-widest mb-4">INVOICE</h2>
+                  </div>
+                </div>
+
+                {/* Invoice Info */}
+                <div className="flex justify-between mb-10 items-end">
+                   <div className="space-y-1.5">
+                      <h3 className="font-bold text-slate-700 mb-2">Invoice to:</h3>
+                      <p className="font-bold text-[#333B4F] text-lg">{sale.customerName || 'Customer / General'}</p>
+                   </div>
+                   <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-base">
+                      <span className="font-bold text-slate-700 text-right">Invoice #</span>
+                      <span className="font-bold text-[#333B4F]">{sale.voucherNo}</span>
+                      <span className="font-bold text-slate-700 text-right">Date</span>
+                      <span className="font-bold text-[#333B4F]">{sale.date}</span>
+                   </div>
+                </div>
+
+                {/* Table */}
+                <div className="flex-1 mb-8 flex flex-col">
+                   <table className="w-full text-base border-collapse border border-[#333B4F]">
+                      <thead>
+                         <tr className="bg-[#333B4F] text-white">
+                           <th className="py-2.5 px-3 text-left font-semibold border-r border-[#333B4F] w-12">No</th>
+                           <th className="py-2.5 px-3 text-left font-semibold border-r border-[#333B4F]">Item Description</th>
+                           <th className="py-2.5 px-3 text-center font-semibold border-r border-[#333B4F] w-20">Qty</th>
+                           <th className="py-2.5 px-3 text-center font-semibold border-r border-[#333B4F] w-32">Price</th>
+                           <th className="py-2.5 px-3 text-center font-semibold w-32">Total</th>
+                         </tr>
+                      </thead>
+                      <tbody>
+                         {sale.items.map((item, idx) => (
+                           <tr key={idx} className="border-b border-[#333B4F]">
+                              <td className="py-2.5 px-3 border-r border-[#333B4F] text-[#333B4F] font-medium text-center">{idx + 1}</td>
+                              <td className="py-2.5 px-3 border-r border-[#333B4F] text-[#333B4F]">{item.productName}</td>
+                              <td className="py-2.5 px-3 text-center border-r border-[#333B4F] text-[#333B4F]">{item.quantity ?? (item as any).weightKg ?? 1}</td>
+                              <td className="py-2.5 px-3 text-right border-r border-[#333B4F] text-[#333B4F]">{(item.unitPrice ?? (item as any).pricePerKg ?? 0).toLocaleString()}</td>
+                              <td className="py-2.5 px-3 text-right text-[#333B4F] font-medium">{(item.totalAmount ?? 0).toLocaleString()}</td>
+                           </tr>
+                         ))}
+                         {/* Fill empty rows to make it look like a full page invoice */}
+                         {[...Array(Math.max(1, 12 - sale.items.length))].map((_, i) => (
+                           <tr key={`empty-${i}`} className="border-b border-[#333B4F]">
+                             <td className="py-4 px-3 border-r border-[#333B4F]"></td>
+                             <td className="py-4 px-3 border-r border-[#333B4F]"></td>
+                             <td className="py-4 px-3 border-r border-[#333B4F]"></td>
+                             <td className="py-4 px-3 border-r border-[#333B4F]"></td>
+                             <td className="py-4 px-3"></td>
+                           </tr>
+                         ))}
+                      </tbody>
+                   </table>
+                   
+                   <div className="flex w-full">
+                      {/* Left: Payment Info */}
+                      <div className="flex-1 pt-6 pr-4">
+                        <p className="font-bold text-slate-800 text-base mb-2">Payment Info:</p>
+                        <div className="text-sm text-slate-600 space-y-1">
+                          <p>Method: {sale.paymentMethod}</p>
+                          <p>Cash Received: {(sale.cashReceived ?? 0).toLocaleString()}</p>
+                          {sale.changeAmount !== undefined && <p>Change: {(sale.changeAmount ?? 0).toLocaleString()}</p>}
+                          {sale.notes && <p className="mt-2 text-[#333B4F]"><span className="font-bold">Notes:</span> {sale.notes}</p>}
+                        </div>
+                      </div>
+                      
+                      {/* Right: Totals Grid */}
+                      <div className="w-[16rem] flex flex-col">
+                        <div className="flex border-b border-x border-[#333B4F]">
+                          <div className="w-1/2 bg-[#333B4F] text-white py-2 px-3 font-semibold flex items-center border-b border-[#4A5568]">Sub Total</div>
+                          <div className="w-1/2 py-2 px-3 text-right font-medium text-[#333B4F] flex items-center justify-end">{(sale.subtotal ?? 0).toLocaleString()}</div>
+                        </div>
+                        <div className="flex border-b border-x border-[#333B4F]">
+                          <div className="w-1/2 bg-[#333B4F] text-white py-2 px-3 font-semibold flex items-center border-b border-[#4A5568]">Discount</div>
+                          <div className="w-1/2 py-2 px-3 text-right font-medium text-[#333B4F] flex items-center justify-end">{(sale.discount ?? 0).toLocaleString()}</div>
+                        </div>
+                        <div className="flex border-b border-x border-[#333B4F]">
+                          <div className="w-1/2 bg-[#333B4F] text-white py-3 px-3 font-bold text-lg flex items-center tracking-wider">TOTAL</div>
+                          <div className="w-1/2 py-3 px-3 text-right font-bold text-lg text-[#333B4F] flex items-center justify-end">{(sale.grandTotal ?? 0).toLocaleString()}</div>
+                        </div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Footer Info */}
+                <div className="mt-auto pt-8 flex justify-center w-full z-10 pb-4">
+                  <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-xs text-[#333B4F]">
+                     <div className="flex items-center gap-2.5"><Phone className="w-3.5 h-3.5"/> <span className="font-medium">{shopInfo.phone || 'Phone Number'}</span></div>
+                     <div className="flex items-center gap-2.5"><MapPin className="w-3.5 h-3.5"/> <span className="font-medium max-w-[200px] truncate">{shopInfo.address || 'Store Address'}</span></div>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Totals & Calculations */}
-            <div className="py-2.5 space-y-1 text-[11px] text-slate-800 border-b border-dashed border-slate-400">
-              <div className="flex justify-between">
-                <span className="text-slate-600">ကျသင့်ငွေ စုစုပေါင်း:</span>
-                <span className="font-semibold">{(sale.subtotal ?? 0).toLocaleString()} ကျပ်</span>
+            </div>
+          ) : (
+            <div
+              className="bg-white text-slate-900 shadow-md border border-slate-200 p-4 print:p-0 print:border-none print:shadow-none transition-all w-[320px] font-sans text-xs leading-normal mx-auto"
+              id="voucher-printable-area"
+            >
+              {/* Shop Branding */}
+              <div className="text-center pb-3 border-b border-dashed border-slate-400">
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 uppercase tracking-tight">
+                  {shopInfo.name}
+                </h1>
+                <p className="text-[11px] text-slate-700 font-sans mt-0.5">{shopInfo.tagline}</p>
+                <p className="text-[11px] text-slate-700 font-sans mt-0.5">{shopInfo.address}</p>
+                <p className="text-[11px] text-slate-800 font-semibold mt-0.5">
+                  ဖုန်း - {shopInfo.phone}
+                </p>
               </div>
-              {(sale.discount || 0) > 0 && (
-                <div className="flex justify-between text-emerald-800 font-medium">
-                  <span>လျှော့ဈေး (Discount):</span>
-                  <span>- {(sale.discount ?? 0).toLocaleString()} ကျပ်</span>
+
+              {/* Voucher Metadata Grid */}
+              <div className="py-2.5 border-b border-dashed border-slate-400 text-[11px] space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">ဘောင်ချာနံပါတ်:</span>
+                  <span className="font-bold text-slate-900">{sale.voucherNo}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">ရက်စွဲ/အချိန်:</span>
+                  <span className="font-medium text-slate-900">
+                    {sale.date} {sale.time ? `(${sale.time})` : ''}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">ဝယ်သူအမည်:</span>
+                  <span className="font-bold text-slate-900">{sale.customerName || 'အထွေထွေ'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-600">အမျိုးအစား/ငွေရှင်း:</span>
+                  <span className="font-semibold text-slate-900">
+                    {sale.saleType === 'Wholesale' ? 'လက်ကား' : 'လက်လီ'} / {sale.paymentMethod}
+                  </span>
+                </div>
+              </div>
+
+              {/* Itemized Receipt Table (80mm Thermal optimized layout) */}
+              <div className="py-2.5 border-b border-dashed border-slate-400">
+                <div className="flex justify-between font-bold text-[11px] text-slate-800 border-b border-slate-300 pb-1 mb-1.5">
+                  <span className="text-left">ပစ္စည်း / အသေးစိတ်</span>
+                  <span className="text-right">ကျသင့်ငွေ</span>
+                </div>
+                <div className="space-y-2 text-[11px]">
+                  {sale.items.map((item, idx) => (
+                    <div key={idx} className="space-y-0.5">
+                      <div className="font-semibold text-slate-950 flex justify-between items-start gap-1">
+                        <span className="text-left leading-tight break-words flex-1">{item.productName}</span>
+                        <span className="text-right font-bold shrink-0 text-slate-900 min-w-[70px]">
+                          {(item.totalAmount ?? 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-600 pl-0.5">
+                        <span>
+                          {(item.quantity ?? (item as any).weightKg ?? 1)} x {(item.unitPrice ?? (item as any).pricePerKg ?? 0).toLocaleString()} ကျပ်
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Totals & Calculations */}
+              <div className="py-2.5 space-y-1 text-[11px] text-slate-800 border-b border-dashed border-slate-400">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">ကျသင့်ငွေ စုစုပေါင်း:</span>
+                  <span className="font-semibold">{(sale.subtotal ?? 0).toLocaleString()} ကျပ်</span>
+                </div>
+                {(sale.discount || 0) > 0 && (
+                  <div className="flex justify-between text-emerald-800 font-medium">
+                    <span>လျှော့ဈေး (Discount):</span>
+                    <span>- {(sale.discount ?? 0).toLocaleString()} ကျပ်</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center pt-1.5 text-xs sm:text-sm font-bold text-slate-950 border-t border-slate-800">
+                  <span>အသားတင် ကျသင့်ငွေ:</span>
+                  <span className="text-indigo-950 font-extrabold">{(sale.grandTotal ?? 0).toLocaleString()} ကျပ်</span>
+                </div>
+
+                {sale.cashReceived !== undefined && sale.cashReceived > 0 && (
+                  <div className="pt-1.5 text-[11px] space-y-0.5 text-slate-700 border-t border-dotted border-slate-400 mt-1">
+                    <div className="flex justify-between">
+                      <span>ပေးငွေ (Cash):</span>
+                      <span>{(sale.cashReceived ?? 0).toLocaleString()} ကျပ်</span>
+                    </div>
+                    {sale.changeAmount !== undefined && (
+                      <div className="flex justify-between font-bold text-slate-900">
+                        <span>ပြန်အမ်းငွေ (Change):</span>
+                        <span>{(sale.changeAmount ?? 0).toLocaleString()} ကျပ်</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Notes */}
+              {sale.notes && (
+                <div className="py-2 text-[10px] text-slate-700 border-b border-dashed border-slate-400">
+                  <span className="font-bold">မှတ်ချက်:</span> {sale.notes}
                 </div>
               )}
-              <div className="flex justify-between items-center pt-1.5 text-xs sm:text-sm font-bold text-slate-950 border-t border-slate-800">
-                <span>အသားတင် ကျသင့်ငွေ:</span>
-                <span className="text-indigo-950 font-extrabold">{(sale.grandTotal ?? 0).toLocaleString()} ကျပ်</span>
+
+              {/* Footer Note */}
+              <div className="pt-3 text-center text-[10px] text-slate-700 space-y-1 font-sans">
+                <p className="font-semibold">{shopInfo.voucherNote}</p>
+                <p className="text-[9px] text-slate-500 uppercase tracking-widest">
+                  *** THANK YOU ***
+                </p>
               </div>
-
-              {sale.cashReceived !== undefined && sale.cashReceived > 0 && (
-                <div className="pt-1.5 text-[11px] space-y-0.5 text-slate-700 border-t border-dotted border-slate-400 mt-1">
-                  <div className="flex justify-between">
-                    <span>ပေးငွေ (Cash):</span>
-                    <span>{(sale.cashReceived ?? 0).toLocaleString()} ကျပ်</span>
-                  </div>
-                  {sale.changeAmount !== undefined && (
-                    <div className="flex justify-between font-bold text-slate-900">
-                      <span>ပြန်အမ်းငွေ (Change):</span>
-                      <span>{(sale.changeAmount ?? 0).toLocaleString()} ကျပ်</span>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
-
-            {/* Notes */}
-            {sale.notes && (
-              <div className="py-2 text-[10px] text-slate-700 border-b border-dashed border-slate-400">
-                <span className="font-bold">မှတ်ချက်:</span> {sale.notes}
-              </div>
-            )}
-
-            {/* Footer Note */}
-            <div className="pt-3 text-center text-[10px] text-slate-700 space-y-1 font-sans">
-              <p className="font-semibold">{shopInfo.voucherNote}</p>
-              <p className="text-[9px] text-slate-500 uppercase tracking-widest">
-                *** THANK YOU ***
-              </p>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Footer Action Buttons */}
