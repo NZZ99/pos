@@ -13,7 +13,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
   shopInfo,
   onClose,
 }) => {
-  const [printSize, setPrintSize] = useState<'80mm' | 'A4'>('80mm');
+  const [printSize, setPrintSize] = useState<'80mm' | 'A4' | 'A5'>('80mm');
 
   if (!sale) return null;
 
@@ -27,13 +27,13 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
         {`
           @media print {
             @page {
-              size: ${printSize === 'A4' ? 'A4 portrait' : '80mm auto'};
+              size: ${printSize === 'A4' ? 'A4 portrait' : printSize === 'A5' ? '148.5mm 210mm' : '80mm auto'};
               margin: 0mm;
             }
           }
         `}
       </style>
-      <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all print:shadow-none print:border-none print:m-0 ${printSize === 'A4' ? 'max-w-4xl print:max-w-none' : 'max-w-lg print:max-w-none'}`}>
+      <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all print:shadow-none print:border-none print:m-0 ${printSize === 'A4' || printSize === 'A5' ? 'max-w-4xl print:max-w-none' : 'max-w-lg print:max-w-none'}`}>
         {/* Top Header Actions Bar (Hidden on Print) */}
         <div className="bg-indigo-900 px-5 py-3.5 text-white flex flex-wrap items-center justify-between gap-3 border-b border-indigo-800 print:hidden">
           <div className="flex items-center gap-2">
@@ -43,7 +43,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             <div>
               <h3 className="font-bold text-sm sm:text-base">အရောင်း ဘောင်ချာ (Voucher)</h3>
               <p className="text-[11px] text-indigo-200">
-                {printSize === 'A4' ? 'A4 Invoice Size' : '80mm Thermal Receipt Printer Size'}
+                {printSize === 'A4' ? 'A4 Invoice Size' : printSize === 'A5' ? '148.5x210mm Invoice Size' : '80mm Thermal Receipt Printer Size'}
               </p>
             </div>
           </div>
@@ -72,6 +72,17 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                 }`}
               >
                 A4 / Regular
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintSize('A5')}
+                className={`px-2 py-1 rounded font-medium transition-all cursor-pointer ${
+                  printSize === 'A5'
+                    ? 'bg-emerald-600 text-white font-bold shadow-2xs'
+                    : 'text-indigo-200 hover:text-white'
+                }`}
+              >
+                148.5x210mm
               </button>
             </div>
 
@@ -117,35 +128,39 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
           )}
 
           {/* Printable Voucher Paper Content */}
-          {printSize === 'A4' ? (
+          {printSize === 'A4' || printSize === 'A5' ? (
             <div className="w-full overflow-x-auto bg-slate-100 p-4 sm:p-8 flex justify-center print:p-0 print:bg-white print:overflow-visible">
               <div 
-                className="bg-white w-[210mm] min-h-[297mm] shrink-0 relative overflow-hidden print:w-[210mm] print:min-w-[210mm] print:max-w-[210mm] print:min-h-[297mm] print:border-none border border-slate-200 shadow-md font-sans text-slate-900 flex flex-col mx-auto" 
+                className={`bg-white shrink-0 relative overflow-hidden print:border-none border border-slate-200 shadow-md font-sans text-slate-900 flex flex-col mx-auto ${
+                  printSize === 'A4' 
+                    ? 'w-[210mm] min-h-[297mm] print:w-[210mm] print:min-w-[210mm] print:max-w-[210mm] print:min-h-[297mm]' 
+                    : 'w-[148.5mm] min-h-[210mm] print:w-[148.5mm] print:min-w-[148.5mm] print:max-w-[148.5mm] print:min-h-[210mm]'
+                }`} 
                 id="voucher-printable-area"
               >
                 <img src="https://i.postimg.cc/BnMDmH0x/Colorful-minimal-layout-with-blank-white-space-for-adding-elements-Premium-Vector.jpg" alt="" className="absolute inset-0 w-full h-full object-fill z-0 print:block" />
                 
-              <div className="relative z-10 flex flex-col h-full p-10 sm:p-14 print:p-12 flex-1">
+              <div className={`relative z-10 flex flex-col h-full ${printSize === 'A5' ? 'p-6 sm:p-8 print:p-8' : 'p-10 sm:p-14 print:p-12'} flex-1`}>
                 {/* Header */}
-                <div className="flex justify-between items-start mb-10">
+                <div className={`flex justify-between items-start ${printSize === 'A5' ? 'mb-6' : 'mb-10'}`}>
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                       <h1 className="text-3xl font-bold text-[#333B4F] tracking-tight">{shopInfo.name}</h1>
+                       <h1 className={`${printSize === 'A5' ? 'text-xl' : 'text-3xl'} font-bold text-[#333B4F] tracking-tight`}>{shopInfo.name}</h1>
                     </div>
-                    <p className="text-sm text-slate-500 font-medium tracking-widest uppercase">{shopInfo.tagline}</p>
+                    <p className={`${printSize === 'A5' ? 'text-xs' : 'text-sm'} text-slate-500 font-medium tracking-widest uppercase`}>{shopInfo.tagline}</p>
                   </div>
                   <div className="text-right mt-2">
-                     <h2 className="text-4xl font-light text-[#333B4F] tracking-widest mb-4">INVOICE</h2>
+                     <h2 className={`\${printSize === 'A5' ? 'text-2xl' : 'text-4xl'} font-light text-[#333B4F] tracking-widest \${printSize === 'A5' ? 'mb-2' : 'mb-4'}`}>INVOICE</h2>
                   </div>
                 </div>
 
                 {/* Invoice Info */}
-                <div className="flex justify-between mb-10 items-end">
+                <div className={`flex justify-between ${printSize === 'A5' ? 'mb-6' : 'mb-10'} items-end`}>
                    <div className="space-y-1.5">
                       <h3 className="font-bold text-slate-700 mb-2">Invoice to:</h3>
-                      <p className="font-bold text-[#333B4F] text-lg">{sale.customerName || 'Customer / General'}</p>
+                      <p className={`font-bold text-[#333B4F] ${printSize === 'A5' ? 'text-base' : 'text-lg'}`}>{sale.customerName || 'Customer / General'}</p>
                    </div>
-                   <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-base">
+                   <div className={`grid grid-cols-2 ${printSize === 'A5' ? 'gap-x-4 gap-y-2 text-sm' : 'gap-x-8 gap-y-3 text-base'}`}>
                       <span className="font-bold text-slate-700 text-right">Invoice #</span>
                       <span className="font-bold text-[#333B4F]">{sale.voucherNo}</span>
                       <span className="font-bold text-slate-700 text-right">Date</span>
@@ -155,7 +170,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
 
                 {/* Table */}
                 <div className="flex-1 mb-8 flex flex-col">
-                   <table className="w-full text-base border-collapse border border-[#333B4F]">
+                   <table className={`w-full border-collapse border border-[#333B4F] ${printSize === 'A5' ? 'text-sm' : 'text-base'}`}>
                       <thead>
                          <tr className="bg-[#333B4F] text-white">
                            <th className="py-2.5 px-3 text-left font-semibold border-r border-[#333B4F] w-12">No</th>
@@ -191,8 +206,8 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                    <div className="flex w-full">
                       {/* Left: Payment Info */}
                       <div className="flex-1 pt-6 pr-4">
-                        <p className="font-bold text-slate-800 text-base mb-2">Payment Info:</p>
-                        <div className="text-sm text-slate-600 space-y-1">
+                        <p className={`font-bold text-slate-800 mb-2 ${printSize === 'A5' ? 'text-sm' : 'text-base'}`}>Payment Info:</p>
+                        <div className={`text-slate-600 space-y-1 ${printSize === 'A5' ? 'text-xs' : 'text-sm'}`}>
                           <p>Method: {sale.paymentMethod}</p>
                           <p>Cash Received: {(sale.cashReceived ?? 0).toLocaleString()}</p>
                           {sale.changeAmount !== undefined && <p>Change: {(sale.changeAmount ?? 0).toLocaleString()}</p>}
