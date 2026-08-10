@@ -23,6 +23,28 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-4 overflow-y-auto">
+      <style>
+        {`
+          @media print {
+            @page {
+              size: ${printSize === 'A4' ? 'A4 portrait' : '80mm auto'};
+              margin: 0mm;
+            }
+            #voucher-printable-area {
+              ${printSize === 'A4' ? `
+                width: 210mm !important;
+              ` : `
+                width: 72mm !important;
+                max-width: 72mm !important;
+                padding: 1mm 2mm !important;
+                font-size: 11px !important;
+                line-height: 1.3 !important;
+                word-break: break-word !important;
+              `}
+            }
+          }
+        `}
+      </style>
       <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all ${printSize === 'A4' ? 'max-w-4xl' : 'max-w-lg'}`}>
         {/* Top Header Actions Bar (Hidden on Print) */}
         <div className="bg-indigo-900 px-5 py-3.5 text-white flex flex-wrap items-center justify-between gap-3 border-b border-indigo-800 print:hidden">
