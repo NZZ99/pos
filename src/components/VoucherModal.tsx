@@ -137,8 +137,8 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               <div 
                 className={`bg-white shrink-0 relative overflow-hidden print:border-none border border-slate-200 shadow-md font-sans text-slate-900 flex flex-col mx-auto ${
                   printSize === 'A4' 
-                    ? 'w-[210mm] min-h-[297mm] print:w-[210mm] print:min-w-[210mm] print:max-w-[210mm] print:min-h-0 print:h-auto' 
-                    : 'w-[105mm] min-h-[150mm] print:w-[105mm] print:min-w-[105mm] print:max-w-[105mm] print:min-h-0 print:h-auto'
+                    ? 'w-[210mm] min-h-[297mm] print:w-[210mm] print:min-w-[210mm] print:max-w-[210mm] print:h-[297mm] print:overflow-hidden' 
+                    : 'w-[105mm] h-[150mm] print:w-[105mm] print:min-w-[105mm] print:max-w-[105mm] print:h-[150mm] print:overflow-hidden'
                 }`} 
                 id="voucher-printable-area"
               >
@@ -162,10 +162,10 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                 <div className={`flex justify-between ${printSize === 'A6' ? 'mb-4' : 'mb-10'} items-end`}>
                    <div className="space-y-1.5">
                       <h3 className="font-bold text-slate-700 mb-2">Invoice to:</h3>
-                      <p className={`font-bold text-[#333B4F] ${printSize === 'A6' ? 'text-sm' : 'text-lg'}`}>{sale.customerName || 'Customer / General'}</p>
+                      <p className={`font-bold text-[#333B4F] ${printSize === 'A6' ? 'text-sm' : 'text-lg'}`}>{sale.customerName || 'Customer'}</p>
                    </div>
                    <div className={`grid grid-cols-2 ${printSize === 'A6' ? 'gap-x-2 gap-y-1 text-sm' : 'gap-x-8 gap-y-3 text-base'}`}>
-                      <span className="font-bold text-slate-700 text-right">Invoice #</span>
+                      <span className="font-bold text-slate-700 text-right">Invoice -</span>
                       <span className="font-bold text-[#333B4F]">{sale.voucherNo}</span>
                       <span className="font-bold text-slate-700 text-right">Date</span>
                       <span className="font-bold text-[#333B4F]">{sale.date}</span>
@@ -223,15 +223,15 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                       <div className="w-[16rem] flex flex-col">
                         <div className="flex border-b border-x border-[#333B4F]">
                           <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} font-semibold flex items-center border-b border-[#4A6568]`}>Sub Total</div>
-                          <div className="w-1/2 py-2 px-3 text-right font-medium text-[#333B4F] flex items-center justify-end">{(sale.subtotal ?? 0).toLocaleString()}</div>
+                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} text-right font-medium text-[#333B4F] flex items-center justify-end`}>{(sale.subtotal ?? 0).toLocaleString()}</div>
                         </div>
                         <div className="flex border-b border-x border-[#333B4F]">
-                          <div className="w-1/2 bg-[#333B4F] text-white py-2 px-3 font-semibold flex items-center border-b border-[#4A6568]">Discount</div>
-                          <div className="w-1/2 py-2 px-3 text-right font-medium text-[#333B4F] flex items-center justify-end">{(sale.discount ?? 0).toLocaleString()}</div>
+                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} font-semibold flex items-center border-b border-[#4A6568]`}>Discount</div>
+                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} text-right font-medium text-[#333B4F] flex items-center justify-end`}>{(sale.discount ?? 0).toLocaleString()}</div>
                         </div>
                         <div className="flex border-b border-x border-[#333B4F]">
-                          <div className="w-1/2 bg-[#333B4F] text-white py-3 px-3 font-bold text-lg flex items-center tracking-wider">TOTAL</div>
-                          <div className="w-1/2 py-3 px-3 text-right font-bold text-lg text-[#333B4F] flex items-center justify-end">{(sale.grandTotal ?? 0).toLocaleString()}</div>
+                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5 text-base' : 'py-3 px-3 text-lg'} font-bold flex items-center tracking-wider`}>TOTAL</div>
+                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5 text-base' : 'py-3 px-3 text-lg'} text-right font-bold text-[#333B4F] flex items-center justify-end`}>{(sale.grandTotal ?? 0).toLocaleString()}</div>
                         </div>
                       </div>
                    </div>
@@ -241,7 +241,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                 <div className="mt-auto pt-8 flex justify-center w-full z-10 pb-4">
                   <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-xs text-[#333B4F]">
                      <div className="flex items-center gap-2.5"><Phone className="w-3.5 h-3.5"/> <span className="font-medium">{shopInfo.phone || 'Phone Number'}</span></div>
-                     <div className="flex items-center gap-2.5"><MapPin className="w-3.5 h-3.5"/> <span className="font-medium max-w-[200px] truncate">{shopInfo.address || 'Store Address'}</span></div>
+                     <div className="flex items-start gap-2.5"><MapPin className="w-3.5 h-3.5 mt-0.5"/> <span className="font-medium max-w-[180px] whitespace-normal">{shopInfo.address || 'Store Address'}</span></div>
                   </div>
                 </div>
               </div>
