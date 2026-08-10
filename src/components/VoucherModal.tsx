@@ -13,7 +13,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
   shopInfo,
   onClose,
 }) => {
-  const [printSize, setPrintSize] = useState<'80mm' | 'A4' | 'A5'>('80mm');
+  const [printSize, setPrintSize] = useState<'80mm' | 'A4' | 'A6'>('80mm');
 
   if (!sale) return null;
 
@@ -27,13 +27,13 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
         {`
           @media print {
             @page {
-              size: ${printSize === 'A4' ? 'A4 portrait' : printSize === 'A5' ? '148.5mm 210mm' : '80mm auto'};
+              size: ${printSize === 'A4' ? 'A4 portrait' : printSize === 'A6' ? '105mm 150mm' : '80mm auto'};
               margin: 0mm;
             }
           }
         `}
       </style>
-      <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all print:shadow-none print:border-none print:m-0 ${printSize === 'A4' || printSize === 'A5' ? 'max-w-4xl print:max-w-none' : 'max-w-lg print:max-w-none'}`}>
+      <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all print:shadow-none print:border-none print:m-0 ${printSize === 'A4' || printSize === 'A6' ? 'max-w-4xl print:max-w-none' : 'max-w-lg print:max-w-none'}`}>
         {/* Top Header Actions Bar (Hidden on Print) */}
         <div className="bg-indigo-900 px-5 py-3.5 text-white flex flex-wrap items-center justify-between gap-3 border-b border-indigo-800 print:hidden">
           <div className="flex items-center gap-2">
@@ -43,7 +43,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             <div>
               <h3 className="font-bold text-sm sm:text-base">အရောင်း ဘောင်ချာ (Voucher)</h3>
               <p className="text-[11px] text-indigo-200">
-                {printSize === 'A4' ? 'A4 Invoice Size' : printSize === 'A5' ? '148.5x210mm Invoice Size' : '80mm Thermal Receipt Printer Size'}
+                {printSize === 'A4' ? 'A4 Invoice Size' : printSize === 'A6' ? '10.5x15cm Invoice Size' : '80mm Thermal Receipt Printer Size'}
               </p>
             </div>
           </div>
@@ -75,14 +75,14 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setPrintSize('A5')}
+                onClick={() => setPrintSize('A6')}
                 className={`px-2 py-1 rounded font-medium transition-all cursor-pointer ${
-                  printSize === 'A5'
+                  printSize === 'A6'
                     ? 'bg-emerald-600 text-white font-bold shadow-2xs'
                     : 'text-indigo-200 hover:text-white'
                 }`}
               >
-                148.5x210mm
+                10.5x15cm
               </button>
             </div>
 
@@ -128,39 +128,39 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
           )}
 
           {/* Printable Voucher Paper Content */}
-          {printSize === 'A4' || printSize === 'A5' ? (
+          {printSize === 'A4' || printSize === 'A6' ? (
             <div className="w-full overflow-x-auto bg-slate-100 p-4 sm:p-8 flex justify-center print:p-0 print:bg-white print:overflow-visible">
               <div 
                 className={`bg-white shrink-0 relative overflow-hidden print:border-none border border-slate-200 shadow-md font-sans text-slate-900 flex flex-col mx-auto ${
                   printSize === 'A4' 
-                    ? 'w-[210mm] min-h-[297mm] print:w-[210mm] print:min-w-[210mm] print:max-w-[210mm] print:min-h-[297mm]' 
-                    : 'w-[148.5mm] min-h-[210mm] print:w-[148.5mm] print:min-w-[148.5mm] print:max-w-[148.5mm] print:min-h-[210mm]'
+                    ? 'w-[210mm] min-h-[297mm] print:w-[210mm] print:min-w-[210mm] print:max-w-[210mm] print:min-h-0 print:h-auto' 
+                    : 'w-[105mm] min-h-[150mm] print:w-[105mm] print:min-w-[105mm] print:max-w-[105mm] print:min-h-0 print:h-auto'
                 }`} 
                 id="voucher-printable-area"
               >
                 <img src="https://i.postimg.cc/BnMDmH0x/Colorful-minimal-layout-with-blank-white-space-for-adding-elements-Premium-Vector.jpg" alt="" className="absolute inset-0 w-full h-full object-fill z-0 print:block" />
                 
-              <div className={`relative z-10 flex flex-col h-full ${printSize === 'A5' ? 'p-6 sm:p-8 print:p-8' : 'p-10 sm:p-14 print:p-12'} flex-1`}>
+              <div className={`relative z-10 flex flex-col h-full ${printSize === 'A6' ? 'p-4 print:p-4' : 'p-10 sm:p-14 print:p-12'} flex-1`}>
                 {/* Header */}
-                <div className={`flex justify-between items-start ${printSize === 'A5' ? 'mb-6' : 'mb-10'}`}>
+                <div className={`flex justify-between items-start ${printSize === 'A6' ? 'mb-2' : 'mb-10'}`}>
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                       <h1 className={`${printSize === 'A5' ? 'text-xl' : 'text-3xl'} font-bold text-[#333B4F] tracking-tight`}>{shopInfo.name}</h1>
+                       <h1 className={`${printSize === 'A6' ? 'text-lg' : 'text-3xl'} font-bold text-[#333B4F] tracking-tight`}>{shopInfo.name}</h1>
                     </div>
-                    <p className={`${printSize === 'A5' ? 'text-xs' : 'text-sm'} text-slate-500 font-medium tracking-widest uppercase`}>{shopInfo.tagline}</p>
+                    <p className={`${printSize === 'A6' ? 'text-xs' : 'text-sm'} text-slate-500 font-medium tracking-widest uppercase`}>{shopInfo.tagline}</p>
                   </div>
                   <div className="text-right mt-2">
-                     <h2 className={`\${printSize === 'A5' ? 'text-2xl' : 'text-4xl'} font-light text-[#333B4F] tracking-widest \${printSize === 'A5' ? 'mb-2' : 'mb-4'}`}>INVOICE</h2>
+                     <h2 className={`${printSize === 'A6' ? 'text-xl' : 'text-4xl'} font-light text-[#333B4F] tracking-widest ${printSize === 'A6' ? 'mb-2' : 'mb-4'}`}>INVOICE</h2>
                   </div>
                 </div>
 
                 {/* Invoice Info */}
-                <div className={`flex justify-between ${printSize === 'A5' ? 'mb-6' : 'mb-10'} items-end`}>
+                <div className={`flex justify-between ${printSize === 'A6' ? 'mb-4' : 'mb-10'} items-end`}>
                    <div className="space-y-1.5">
                       <h3 className="font-bold text-slate-700 mb-2">Invoice to:</h3>
-                      <p className={`font-bold text-[#333B4F] ${printSize === 'A5' ? 'text-base' : 'text-lg'}`}>{sale.customerName || 'Customer / General'}</p>
+                      <p className={`font-bold text-[#333B4F] ${printSize === 'A6' ? 'text-sm' : 'text-lg'}`}>{sale.customerName || 'Customer / General'}</p>
                    </div>
-                   <div className={`grid grid-cols-2 ${printSize === 'A5' ? 'gap-x-4 gap-y-2 text-sm' : 'gap-x-8 gap-y-3 text-base'}`}>
+                   <div className={`grid grid-cols-2 ${printSize === 'A6' ? 'gap-x-2 gap-y-1 text-sm' : 'gap-x-8 gap-y-3 text-base'}`}>
                       <span className="font-bold text-slate-700 text-right">Invoice #</span>
                       <span className="font-bold text-[#333B4F]">{sale.voucherNo}</span>
                       <span className="font-bold text-slate-700 text-right">Date</span>
@@ -170,34 +170,34 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
 
                 {/* Table */}
                 <div className="flex-1 mb-8 flex flex-col">
-                   <table className={`w-full border-collapse border border-[#333B4F] ${printSize === 'A5' ? 'text-sm' : 'text-base'}`}>
+                   <table className={`w-full border-collapse border border-[#333B4F] ${printSize === 'A6' ? 'text-xs' : 'text-base'}`}>
                       <thead>
                          <tr className="bg-[#333B4F] text-white">
-                           <th className="py-2.5 px-3 text-left font-semibold border-r border-[#333B4F] w-12">No</th>
-                           <th className="py-2.5 px-3 text-left font-semibold border-r border-[#333B4F]">Item Description</th>
-                           <th className="py-2.5 px-3 text-center font-semibold border-r border-[#333B4F] w-20">Qty</th>
-                           <th className="py-2.5 px-3 text-center font-semibold border-r border-[#333B4F] w-32">Price</th>
-                           <th className="py-2.5 px-3 text-center font-semibold w-32">Total</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-left font-semibold border-r border-[#333B4F] w-12`}>No</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-left font-semibold border-r border-[#333B4F]`}>Item Description</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-center font-semibold border-r border-[#333B4F] w-20`}>Qty</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-center font-semibold border-r border-[#333B4F] w-32`}>Price</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-center font-semibold w-32`}>Total</th>
                          </tr>
                       </thead>
                       <tbody>
                          {sale.items.map((item, idx) => (
                            <tr key={idx} className="border-b border-[#333B4F]">
-                              <td className="py-2.5 px-3 border-r border-[#333B4F] text-[#333B4F] font-medium text-center">{idx + 1}</td>
-                              <td className="py-2.5 px-3 border-r border-[#333B4F] text-[#333B4F]">{item.productName}</td>
-                              <td className="py-2.5 px-3 text-center border-r border-[#333B4F] text-[#333B4F]">{item.quantity ?? (item as any).weightKg ?? 1}</td>
-                              <td className="py-2.5 px-3 text-right border-r border-[#333B4F] text-[#333B4F]">{(item.unitPrice ?? (item as any).pricePerKg ?? 0).toLocaleString()}</td>
-                              <td className="py-2.5 px-3 text-right text-[#333B4F] font-medium">{(item.totalAmount ?? 0).toLocaleString()}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} border-r border-[#333B4F] text-[#333B4F] font-medium text-center`}>{idx + 1}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} border-r border-[#333B4F] text-[#333B4F]`}>{item.productName}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-center border-r border-[#333B4F] text-[#333B4F]`}>{item.quantity ?? (item as any).weightKg ?? 1}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-right border-r border-[#333B4F] text-[#333B4F]`}>{(item.unitPrice ?? (item as any).pricePerKg ?? 0).toLocaleString()}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-right text-[#333B4F] font-medium`}>{(item.totalAmount ?? 0).toLocaleString()}</td>
                            </tr>
                          ))}
                          {/* Fill empty rows to make it look like a full page invoice */}
-                         {[...Array(Math.max(1, 12 - sale.items.length))].map((_, i) => (
+                         {printSize !== 'A6' && [...Array(Math.max(1, 12 - sale.items.length))].map((_, i) => (
                            <tr key={`empty-${i}`} className="border-b border-[#333B4F]">
-                             <td className="py-4 px-3 border-r border-[#333B4F]"></td>
-                             <td className="py-4 px-3 border-r border-[#333B4F]"></td>
-                             <td className="py-4 px-3 border-r border-[#333B4F]"></td>
-                             <td className="py-4 px-3 border-r border-[#333B4F]"></td>
-                             <td className="py-4 px-3"></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'} border-r border-[#333B4F]`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'} border-r border-[#333B4F]`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'} border-r border-[#333B4F]`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'} border-r border-[#333B4F]`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'}`}></td>
                            </tr>
                          ))}
                       </tbody>
@@ -205,9 +205,9 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                    
                    <div className="flex w-full">
                       {/* Left: Payment Info */}
-                      <div className="flex-1 pt-6 pr-4">
-                        <p className={`font-bold text-slate-800 mb-2 ${printSize === 'A5' ? 'text-sm' : 'text-base'}`}>Payment Info:</p>
-                        <div className={`text-slate-600 space-y-1 ${printSize === 'A5' ? 'text-xs' : 'text-sm'}`}>
+                      <div className={`${printSize === 'A6' ? 'flex-1 pt-2 pr-2' : 'flex-1 pt-6 pr-4'}`}>
+                        <p className={`font-bold text-slate-800 mb-2 ${printSize === 'A6' ? 'text-sm' : 'text-base'}`}>Payment Info:</p>
+                        <div className={`text-slate-600 space-y-1 ${printSize === 'A6' ? 'text-xs' : 'text-sm'}`}>
                           <p>Method: {sale.paymentMethod}</p>
                           <p>Cash Received: {(sale.cashReceived ?? 0).toLocaleString()}</p>
                           {sale.changeAmount !== undefined && <p>Change: {(sale.changeAmount ?? 0).toLocaleString()}</p>}
@@ -218,11 +218,11 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                       {/* Right: Totals Grid */}
                       <div className="w-[16rem] flex flex-col">
                         <div className="flex border-b border-x border-[#333B4F]">
-                          <div className="w-1/2 bg-[#333B4F] text-white py-2 px-3 font-semibold flex items-center border-b border-[#4A5568]">Sub Total</div>
+                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} font-semibold flex items-center border-b border-[#4A6568]`}>Sub Total</div>
                           <div className="w-1/2 py-2 px-3 text-right font-medium text-[#333B4F] flex items-center justify-end">{(sale.subtotal ?? 0).toLocaleString()}</div>
                         </div>
                         <div className="flex border-b border-x border-[#333B4F]">
-                          <div className="w-1/2 bg-[#333B4F] text-white py-2 px-3 font-semibold flex items-center border-b border-[#4A5568]">Discount</div>
+                          <div className="w-1/2 bg-[#333B4F] text-white py-2 px-3 font-semibold flex items-center border-b border-[#4A6568]">Discount</div>
                           <div className="w-1/2 py-2 px-3 text-right font-medium text-[#333B4F] flex items-center justify-end">{(sale.discount ?? 0).toLocaleString()}</div>
                         </div>
                         <div className="flex border-b border-x border-[#333B4F]">
