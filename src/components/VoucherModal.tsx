@@ -30,8 +30,12 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               size: ${printSize === 'A4' ? 'A4 portrait' : printSize === 'A6' ? '105mm 150mm' : '80mm auto'};
               margin: 0mm;
             }
+            html, body {
+              ${printSize === 'A6' ? 'width: 105mm; height: 150mm; overflow: hidden !important;' : ''}
+            }
           }
         `}
+
       </style>
       <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all print:shadow-none print:border-none print:m-0 ${printSize === 'A4' || printSize === 'A6' ? 'max-w-4xl print:max-w-none' : 'max-w-lg print:max-w-none'}`}>
         {/* Top Header Actions Bar (Hidden on Print) */}
@@ -173,11 +177,11 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                    <table className={`w-full border-collapse border border-[#333B4F] ${printSize === 'A6' ? 'text-xs' : 'text-base'}`}>
                       <thead>
                          <tr className="bg-[#333B4F] text-white">
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-left font-semibold border-r border-[#333B4F] w-12`}>No</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-6' : 'py-2.5 px-3 w-12'} text-left font-semibold border-r border-[#333B4F]`}>No</th>
                            <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-left font-semibold border-r border-[#333B4F]`}>Item Description</th>
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-center font-semibold border-r border-[#333B4F] w-20`}>Qty</th>
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-center font-semibold border-r border-[#333B4F] w-32`}>Price</th>
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-center font-semibold w-32`}>Total</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-10' : 'py-2.5 px-3 w-20'} text-center font-semibold border-r border-[#333B4F]`}>Qty</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-16' : 'py-2.5 px-3 w-32'} text-center font-semibold border-r border-[#333B4F]`}>Price</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-16' : 'py-2.5 px-3 w-32'} text-center font-semibold`}>Total</th>
                          </tr>
                       </thead>
                       <tbody>
