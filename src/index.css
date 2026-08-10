@@ -17,6 +17,9 @@ body {
   }
   body * {
     visibility: hidden !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transform: none !important;
   }
   #voucher-printable-area,
   #voucher-printable-area * {

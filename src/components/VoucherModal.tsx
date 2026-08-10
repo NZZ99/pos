@@ -22,7 +22,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-xs p-4 overflow-y-auto print:static print:bg-transparent print:backdrop-blur-none print:p-0">
       <style>
         {`
           @media print {
@@ -30,22 +30,10 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               size: ${printSize === 'A4' ? 'A4 portrait' : '80mm auto'};
               margin: 0mm;
             }
-            #voucher-printable-area {
-              ${printSize === 'A4' ? `
-                width: 210mm !important;
-              ` : `
-                width: 72mm !important;
-                max-width: 72mm !important;
-                padding: 1mm 2mm !important;
-                font-size: 11px !important;
-                line-height: 1.3 !important;
-                word-break: break-word !important;
-              `}
-            }
           }
         `}
       </style>
-      <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all ${printSize === 'A4' ? 'max-w-4xl' : 'max-w-lg'}`}>
+      <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 w-full overflow-hidden my-6 transition-all print:shadow-none print:border-none print:m-0 ${printSize === 'A4' ? 'max-w-4xl print:max-w-none' : 'max-w-lg print:max-w-none'}`}>
         {/* Top Header Actions Bar (Hidden on Print) */}
         <div className="bg-indigo-900 px-5 py-3.5 text-white flex flex-wrap items-center justify-between gap-3 border-b border-indigo-800 print:hidden">
           <div className="flex items-center gap-2">
@@ -132,7 +120,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
           {printSize === 'A4' ? (
             <div className="w-full overflow-x-auto bg-slate-100 p-4 sm:p-8 flex justify-center print:p-0 print:bg-white print:overflow-visible">
               <div 
-                className="bg-white w-[210mm] min-h-[297mm] shrink-0 relative overflow-hidden print:w-[210mm] print:min-h-[297mm] print:border-none border border-slate-200 shadow-md font-sans text-slate-900 flex flex-col mx-auto" 
+                className="bg-white w-[210mm] min-h-[297mm] shrink-0 relative overflow-hidden print:w-[210mm] print:min-w-[210mm] print:max-w-[210mm] print:min-h-[297mm] print:border-none border border-slate-200 shadow-md font-sans text-slate-900 flex flex-col mx-auto" 
                 id="voucher-printable-area"
                 style={{ 
                   backgroundImage: "url('https://i.postimg.cc/BnMDmH0x/Colorful-minimal-layout-with-blank-white-space-for-adding-elements-Premium-Vector.jpg')", 
@@ -247,7 +235,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             </div>
           ) : (
             <div
-              className="bg-white text-slate-900 shadow-md border border-slate-200 p-4 print:p-0 print:border-none print:shadow-none transition-all w-[320px] font-sans text-xs leading-normal mx-auto"
+              className="bg-white text-slate-900 shadow-md border border-slate-200 p-4 print:p-1 print:border-none print:shadow-none transition-all w-[320px] print:w-[72mm] print:min-w-[72mm] print:max-w-[72mm] font-sans text-xs print:text-[11px] leading-normal mx-auto print:mx-0"
               id="voucher-printable-area"
             >
               {/* Shop Branding */}
