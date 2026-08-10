@@ -27,7 +27,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
         {`
           @media print {
             @page {
-              size: ${printSize === 'A4' ? 'A4 portrait' : printSize === 'A6' ? '105mm 150mm' : '80mm auto'};
+              ${printSize === 'A4' ? 'size: A4 portrait;' : printSize === 'A6' ? 'size: 105mm 150mm;' : ''}
               margin: 0mm;
             }
             html, body {
@@ -249,7 +249,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             </div>
           ) : (
             <div
-              className="bg-white text-slate-900 shadow-md border border-slate-200 p-4 print:p-1 print:border-none print:shadow-none transition-all w-[320px] print:w-[72mm] print:min-w-[72mm] print:max-w-[72mm] font-sans text-xs print:text-[11px] leading-normal mx-auto print:mx-0"
+              className="bg-white text-slate-900 shadow-md border border-slate-200 p-4 print:p-0 print:border-none print:shadow-none transition-all w-[320px] print:w-full print:max-w-full font-sans text-xs print:text-[11px] leading-normal mx-auto"
               id="voucher-printable-area"
             >
               {/* Shop Branding */}
