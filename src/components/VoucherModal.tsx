@@ -122,13 +122,8 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               <div 
                 className="bg-white w-[210mm] min-h-[297mm] shrink-0 relative overflow-hidden print:w-[210mm] print:min-w-[210mm] print:max-w-[210mm] print:min-h-[297mm] print:border-none border border-slate-200 shadow-md font-sans text-slate-900 flex flex-col mx-auto" 
                 id="voucher-printable-area"
-                style={{ 
-                  backgroundImage: "url('https://i.postimg.cc/BnMDmH0x/Colorful-minimal-layout-with-blank-white-space-for-adding-elements-Premium-Vector.jpg')", 
-                  backgroundSize: '100% 100%', 
-                  backgroundPosition: 'center', 
-                  backgroundRepeat: 'no-repeat' 
-                }}
               >
+                <img src="https://i.postimg.cc/BnMDmH0x/Colorful-minimal-layout-with-blank-white-space-for-adding-elements-Premium-Vector.jpg" alt="" className="absolute inset-0 w-full h-full object-fill z-0 print:block" />
                 
               <div className="relative z-10 flex flex-col h-full p-10 sm:p-14 print:p-12 flex-1">
                 {/* Header */}
