@@ -31,27 +31,9 @@ export async function exportPOSToExcel(
   ];
 
   // Styling Definitions
-  const titleFont: Partial<ExcelJS.Font> = {
-    name: 'Segoe UI',
-    size: 14,
-    bold: true,
-    color: { argb: 'FFFFFF' },
-  };
-
-  const headerFont: Partial<ExcelJS.Font> = {
-    name: 'Segoe UI',
-    size: 11,
-    bold: true,
-    color: { argb: 'FFFFFF' },
-  };
-
-  const cardHeaderFont: Partial<ExcelJS.Font> = {
-    name: 'Segoe UI',
-    size: 10,
-    bold: true,
-    color: { argb: '334155' },
-  };
-
+  const titleFont: Partial<ExcelJS.Font> = { name: 'Segoe UI', size: 14, bold: true, color: { argb: 'FFFFFF' } };
+  const headerFont: Partial<ExcelJS.Font> = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFF' } };
+  const cardHeaderFont: Partial<ExcelJS.Font> = { name: 'Segoe UI', size: 10, bold: true, color: { argb: '334155' } };
   const borderStyle: Partial<ExcelJS.Borders> = {
     top: { style: 'thin', color: { argb: 'CBD5E1' } },
     left: { style: 'thin', color: { argb: 'CBD5E1' } },
@@ -64,11 +46,7 @@ export async function exportPOSToExcel(
   const titleCell = sheet.getCell('A1');
   titleCell.value = `${shopInfo.name || 'အအေးခဲ အသားငါး အရောင်းဆိုင် (တောင်ကြီးမြို့) စားသောက်ဆိုင်'} - အရောင်း အစီရင်ခံစာ`;
   titleCell.font = titleFont;
-  titleCell.fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: '1E3A8A' }, // Navy Blue
-  };
+  titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E3A8A' } };
   titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
   // Row 3: Subtitle / Date Generated
@@ -82,9 +60,9 @@ export async function exportPOSToExcel(
   // Row 5: Date Reference Cell with Data Validation for Formulas
   sheet.getCell('A5').value = 'စစ်ဆေးမည့် ရက်စွဲ:';
   sheet.getCell('A5').font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: '1E293B' } };
-  
+
   const dateRefCell = sheet.getCell('B5');
-  dateRefCell.value = todayStr; // Format: YYYY-MM-DD
+  dateRefCell.value = 'All'; // Default to All
   dateRefCell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: '1D4ED8' } };
   dateRefCell.alignment = { horizontal: 'center' };
   dateRefCell.border = borderStyle;
@@ -92,11 +70,9 @@ export async function exportPOSToExcel(
 
   // Generate unique sorted list of dates from salesList for Excel Data Validation
   const uniqueDates = Array.from(
-    new Set([todayStr, ...salesList.map((s) => s.date).filter(Boolean)])
-  )
-    .sort()
-    .reverse();
-
+    new Set(['All', todayStr, ...salesList.map((s) => s.date).filter(Boolean)])
+  ).sort().reverse();
+  
   dateRefCell.dataValidation = {
     type: 'list',
     allowBlank: false,
@@ -106,13 +82,15 @@ export async function exportPOSToExcel(
     error: 'ကျေးဇူးပြု၍ စာရင်းရှိ ရက်စွဲတစ်ခုကို ရွေးချယ်ပါ။',
   };
 
+  // Helper cell for formulas when B5 is "All"
+  sheet.getCell('K5').value = { formula: '=IF(B5="All", "' + todayStr + '", B5)' };
+  sheet.getCell('K5').font = { color: { argb: 'FFFFFF' } };
+
+  const lastDataRow = Math.max(15, 14 + salesList.length);
   // Row 7-9: Formula Summary Cards (Today / This Week / This Month / This Year / All Time)
   const summaryCards = [
-    { title: 'Daily', cellRange: 'A7:B8', valCell: 'A8', labelCell: 'A7', color: 'DBEAFE', formula: '=SUMIF(B15:B5000, B5, G15:G5000)' },
-    { title: 'Weekly', cellRange: 'C7:D8', valCell: 'C8', labelCell: 'C7', color: 'DCFCE7', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&(DATEVALUE(B5)-WEEKDAY(DATEVALUE(B5),2)+1), B15:B5000, "<="&(DATEVALUE(B5)-WEEKDAY(DATEVALUE(B5),2)+7))' },
-    { title: 'Monthly', cellRange: 'E7:F8', valCell: 'E8', labelCell: 'E7', color: 'FEF3C7', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&DATE(YEAR(DATEVALUE(B5)),MONTH(DATEVALUE(B5)),1), B15:B5000, "<="&EOMONTH(DATEVALUE(B5),0))' },
-    { title: 'Yearly', cellRange: 'G7:H8', valCell: 'G8', labelCell: 'G7', color: 'F3E8FF', formula: '=SUMIFS(G15:G5000, B15:B5000, ">="&DATE(YEAR(DATEVALUE(B5)),1,1), B15:B5000, "<="&DATE(YEAR(DATEVALUE(B5)),12,31))' },
-    { title: 'Total', cellRange: 'I7:I8', valCell: 'I8', labelCell: 'I7', color: 'E0E7FF', formula: '=SUM(A8+C8+E8+G8)' },
+    { title: 'ရွေးချယ်ထားသော ရက်စွဲ (Daily)', cellRange: 'A7:D8', valCell: 'A8', labelCell: 'A7', color: 'DBEAFE', formula: `=SUMIF(B15:B${lastDataRow}, K5, G15:G${lastDataRow})` },
+    { title: 'စုစုပေါင်း (Total)', cellRange: 'E7:I8', valCell: 'E8', labelCell: 'E7', color: 'E0E7FF', formula: `=SUM(G15:G${lastDataRow})` },
   ];
 
   summaryCards.forEach((card) => {
@@ -131,14 +109,10 @@ export async function exportPOSToExcel(
   });
 
   // Merge Card Cells nicely
-  sheet.mergeCells('A7:B7');
-  sheet.mergeCells('A8:B8');
-  sheet.mergeCells('C7:D7');
-  sheet.mergeCells('C8:D8');
-  sheet.mergeCells('E7:F7');
-  sheet.mergeCells('E8:F8');
-  sheet.mergeCells('G7:H7');
-  sheet.mergeCells('G8:H8');
+  sheet.mergeCells('A7:D7');
+  sheet.mergeCells('A8:D8');
+  sheet.mergeCells('E7:I7');
+  sheet.mergeCells('E8:I8');
 
   // Row 10-12: Empty Spacer & Section Header
   sheet.getCell('A11').value = '📊 အရောင်း အသေးစိတ် မှတ်တမ်းများ (Detailed Sales Records)';
@@ -156,7 +130,6 @@ export async function exportPOSToExcel(
     'ငွေရှင်းပုံစံ',
     'မှတ်ချက်',
   ];
-
   const headerRow = sheet.getRow(14);
   headerRow.height = 26;
   tableHeaders.forEach((hdr, colIdx) => {
@@ -168,12 +141,11 @@ export async function exportPOSToExcel(
     cell.border = borderStyle;
   });
 
-  // Populate Sales Data
+  // Populate Sales Data Statically like before
   let currentRowIndex = 15;
   salesList.forEach((sale, idx) => {
     const row = sheet.getRow(currentRowIndex);
     row.height = 20;
-
     const isEven = idx % 2 === 0;
     const rowBg = isEven ? 'FFFFFF' : 'F8FAFC';
 
@@ -200,10 +172,8 @@ export async function exportPOSToExcel(
     
     row.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
     row.getCell(6).numFmt = '#,##0';
-
     row.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
     row.getCell(7).numFmt = '#,##0 "ကျပ်"';
-
     row.getCell(8).alignment = { horizontal: 'center', vertical: 'middle' };
     row.getCell(9).alignment = { horizontal: 'left', vertical: 'middle' };
 
@@ -222,24 +192,25 @@ export async function exportPOSToExcel(
         fgColor: { argb: isRefunded ? 'FEE2E2' : rowBg },
       };
     }
-
     currentRowIndex++;
   });
+
+  // Add AutoFilter to the Table Headers (like Ctrl+T)
+  sheet.autoFilter = `A14:I${Math.max(14, currentRowIndex - 1)}`;
 
   // Total Summary Row at the bottom
   const totalRow = sheet.getRow(currentRowIndex);
   totalRow.height = 24;
-
   totalRow.getCell(1).value = 'စုစုပေါင်း (Total)';
   totalRow.getCell(1).font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: '1E3A8A' } };
   totalRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
-
-  totalRow.getCell(6).value = { formula: `=SUM(F15:F${currentRowIndex - 1})` };
+  
+  totalRow.getCell(6).value = { formula: `=SUBTOTAL(109, F15:F${currentRowIndex - 1})` };
   totalRow.getCell(6).font = { name: 'Segoe UI', size: 11, bold: true };
   totalRow.getCell(6).numFmt = '#,##0';
   totalRow.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
 
-  totalRow.getCell(7).value = { formula: `=SUM(G15:G${currentRowIndex - 1})` };
+  totalRow.getCell(7).value = { formula: `=SUBTOTAL(109, G15:G${currentRowIndex - 1})` };
   totalRow.getCell(7).font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: '1E3A8A' } };
   totalRow.getCell(7).numFmt = '#,##0 "ကျပ်"';
   totalRow.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
