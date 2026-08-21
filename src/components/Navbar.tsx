@@ -9,6 +9,7 @@ import {
   Menu,
   X,
   LogOut,
+  User as UserIcon,
 } from 'lucide-react';
 import { ShopInfo, TabLabels, User } from '../types';
 
@@ -85,8 +86,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-inner">
-              🧊
+            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-inner shrink-0">
+              <img src="https://i.postimg.cc/kGnnGwLw/Chat-GPT-Image-Aug-8-2026-10-27-14-AM.png" alt="TCO Fresh Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
@@ -118,8 +119,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold uppercase">
-                  {currentUser.email[0]}
+                <div className="w-5 h-5 rounded-full shrink-0 bg-[#d3d3eb] flex items-center justify-center text-slate-800 text-[10px]">
+                  <UserIcon className="w-3.5 h-3.5" />
                 </div>
               )}
               <div className="hidden sm:flex flex-col text-left">
@@ -156,8 +157,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Drawer Header */}
             <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-                  🧊
+                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0">
+                  <img src="https://i.postimg.cc/kGnnGwLw/Chat-GPT-Image-Aug-8-2026-10-27-14-AM.png" alt="TCO Fresh Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="font-bold text-sm text-white">Menu Navigation</span>
               </div>
@@ -187,8 +188,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                         referrerPolicy="no-referrer"
                       />
                     ) : (
-                      <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-bold uppercase">
-                        {currentUser.email[0]}
+                      <div className="w-6 h-6 rounded-full shrink-0 bg-[#d3d3eb] flex items-center justify-center text-slate-800 text-xs">
+                        <UserIcon className="w-4 h-4" />
                       </div>
                     )}
                     <div className="flex flex-col text-left">

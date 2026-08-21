@@ -13,7 +13,14 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
   shopInfo,
   onClose,
 }) => {
-  const [printSize, setPrintSize] = useState<'80mm' | 'A4' | 'A6'>('80mm');
+  const [printSize, setPrintSize] = useState<'80mm' | 'A4' | 'A6'>(
+    (localStorage.getItem('cs_pos_print_size') as '80mm' | 'A4' | 'A6') || '80mm'
+  );
+
+  const handlePrintSizeChange = (size: '80mm' | 'A4' | 'A6') => {
+    setPrintSize(size);
+    localStorage.setItem('cs_pos_print_size', size);
+  };
 
   if (!sale) return null;
 
@@ -47,57 +54,12 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             <div>
               <h3 className="font-bold text-sm sm:text-base">အရောင်း ဘောင်ချာ (Voucher)</h3>
               <p className="text-[11px] text-indigo-200">
-                {printSize === 'A4' ? 'A4 Invoice Size' : printSize === 'A6' ? '10.5x15cm Invoice Size' : '80mm Thermal Receipt Printer Size'}
+                {printSize === 'A4' ? 'A4 Invoice Size' : printSize === 'A6' ? 'Envelope Com 10 Invoice Size' : '80mm Thermal Receipt Printer Size'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Print Size Toggle */}
-            <div className="bg-indigo-950 p-1 rounded-lg flex items-center border border-indigo-700/60 text-xs">
-              <button
-                type="button"
-                onClick={() => setPrintSize('80mm')}
-                className={`px-2 py-1 rounded font-medium transition-all cursor-pointer ${
-                  printSize === '80mm'
-                    ? 'bg-emerald-600 text-white font-bold shadow-2xs'
-                    : 'text-indigo-200 hover:text-white'
-                }`}
-              >
-                80mm Thermal
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintSize('A4')}
-                className={`px-2 py-1 rounded font-medium transition-all cursor-pointer ${
-                  printSize === 'A4'
-                    ? 'bg-emerald-600 text-white font-bold shadow-2xs'
-                    : 'text-indigo-200 hover:text-white'
-                }`}
-              >
-                A4 / Regular
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintSize('A6')}
-                className={`px-2 py-1 rounded font-medium transition-all cursor-pointer ${
-                  printSize === 'A6'
-                    ? 'bg-emerald-600 text-white font-bold shadow-2xs'
-                    : 'text-indigo-200 hover:text-white'
-                }`}
-              >
-                10.5x15cm
-              </button>
-            </div>
-
-            <button
-              onClick={handlePrint}
-              id="print-voucher-btn"
-              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Print</span>
-            </button>
             <button
               onClick={onClose}
               className="text-indigo-200 hover:text-white p-1 rounded-lg hover:bg-indigo-800 transition-colors cursor-pointer"
@@ -366,24 +328,58 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
 
         {/* Footer Action Buttons */}
         <div className="bg-slate-50 px-5 py-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 print:hidden">
-          <div className="text-xs text-slate-500 flex items-center gap-1.5">
-            <Smartphone className="w-4 h-4 text-emerald-600" />
-            <span>80mm Thermal Receipt Ready</span>
-          </div>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+          >
+            Close
+          </button>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
-            >
-              Close
-            </button>
+            {/* Print Size Toggle */}
+            <div className="bg-slate-200 p-1 rounded-lg flex items-center border border-slate-300 text-xs">
+              <button
+                type="button"
+                onClick={() => handlePrintSizeChange('80mm')}
+                className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
+                  printSize === '80mm'
+                    ? 'bg-white text-indigo-700 font-bold shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                80mm Thermal
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePrintSizeChange('A4')}
+                className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
+                  printSize === 'A4'
+                    ? 'bg-white text-indigo-700 font-bold shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                A4
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePrintSizeChange('A6')}
+                className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer ${
+                  printSize === 'A6'
+                    ? 'bg-white text-indigo-700 font-bold shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Envelope Com 10
+              </button>
+            </div>
+
             <button
               onClick={handlePrint}
+              id="print-voucher-btn-bottom"
               className="px-5 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>80mm Thermal Printer</span>
+              <span>Print</span>
             </button>
           </div>
         </div>
