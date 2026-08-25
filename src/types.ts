@@ -59,6 +59,7 @@ export interface ShopInfo {
   address: string;
   phone: string;
   voucherNote: string;
+  settingsPin?: string;
 }
 
 export interface TabLabels {

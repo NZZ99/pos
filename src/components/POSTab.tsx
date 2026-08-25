@@ -330,9 +330,22 @@ export const POSTab: React.FC<POSTabProps> = ({
               <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5 text-indigo-600" />
               <span>ဈေးဝယ်ခြင်း စာရင်း (Cart)</span>
             </h3>
-            <span className="text-[10px] lg:text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 lg:px-2.5 lg:py-1 rounded-full">
-              {cart.length} မျိုး
-            </span>
+            <div className="flex items-center gap-2">
+              {cart.length > 0 && (
+                <>
+                  <span className="text-[10px] lg:text-xs font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 lg:px-2.5 lg:py-1 rounded-full">
+                    {cart.length} မျိုး
+                  </span>
+                  <button
+                    onClick={handleCheckout}
+                    className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] lg:text-xs font-bold px-2.5 py-1 lg:px-3 lg:py-1.5 rounded-full shadow-sm transition-colors cursor-pointer"
+                  >
+                    <Printer className="w-3 h-3 lg:w-3.5 lg:h-3.5" />
+                    <span>Print</span>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Cart Items List */}

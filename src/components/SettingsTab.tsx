@@ -47,15 +47,17 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [newPin, setNewPin] = useState('');
 
   useEffect(() => {
-    const savedPin = localStorage.getItem('cs_pos_v5_settings_pin');
+    const savedPin = shopInfo.settingsPin;
     if (savedPin) {
       setPinLock(savedPin);
       setNewPin(savedPin);
       setIsUnlocked(false);
     } else {
       setIsUnlocked(true);
+      setPinLock(null);
+      setNewPin('');
     }
-  }, []);
+  }, [shopInfo.settingsPin]);
 
   if (!isUnlocked && pinLock) {
     return <SettingsPinLock correctPin={pinLock} onUnlock={() => setIsUnlocked(true)} />;
@@ -71,16 +73,17 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       return;
     }
 
-    onSaveShopInfo(shopForm);
-    onSaveTabLabels(labelForm);
-    
+    let updatedShopForm = { ...shopForm };
     if (newPin.length === 6) {
-      localStorage.setItem('cs_pos_v5_settings_pin', newPin);
+      updatedShopForm.settingsPin = newPin;
       setPinLock(newPin);
     } else if (newPin.length === 0) {
-      localStorage.removeItem('cs_pos_v5_settings_pin');
+      updatedShopForm.settingsPin = undefined;
       setPinLock(null);
     }
+    
+    onSaveShopInfo(updatedShopForm);
+    onSaveTabLabels(labelForm);
 
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
