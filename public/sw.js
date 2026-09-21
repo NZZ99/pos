@@ -7,24 +7,17 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
+      return Promise.all(keys.map((key) => caches.delete(key)));
+    }).then(() => {
+      if (self.location.hostname.includes('run.app') || self.location.hostname === 'localhost') {
+        return self.registration.unregister();
+      }
     })
   );
   self.clients.claim();
@@ -33,15 +26,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  const url = event.request.url;
-  // Always bypass Vite, source code, and API or non-http requests
   if (
-    url.includes('/@') ||
-    url.includes('/src/') ||
-    url.includes('node_modules') ||
-    url.includes('vite') ||
     self.location.hostname.includes('run.app') ||
-    self.location.hostname === 'localhost'
+    self.location.hostname === 'localhost' ||
+    event.request.url.includes('/@') ||
+    event.request.url.includes('/src/') ||
+    event.request.url.includes('node_modules') ||
+    event.request.url.includes('vite')
   ) {
     return;
   }

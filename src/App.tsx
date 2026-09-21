@@ -42,8 +42,12 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
 
   // Persistence via localStorage with user suffix
   const [shopInfo, setShopInfo] = useState<ShopInfo>(() => {
-    const saved = localStorage.getItem(`cs_pos_v5_shop${suffix}`);
-    return saved ? JSON.parse(saved) : initialShopInfo;
+    try {
+      const saved = localStorage.getItem(`cs_pos_v5_shop${suffix}`);
+      return saved ? JSON.parse(saved) : initialShopInfo;
+    } catch {
+      return initialShopInfo;
+    }
   });
 
   const [tabLabels, setTabLabels] = useState<TabLabels>(() => {
@@ -63,18 +67,30 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
   });
 
   const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem(`cs_pos_v5_products${suffix}`);
-    return saved ? JSON.parse(saved) : initialProducts;
+    try {
+      const saved = localStorage.getItem(`cs_pos_v5_products${suffix}`);
+      return saved ? JSON.parse(saved) : initialProducts;
+    } catch {
+      return initialProducts;
+    }
   });
 
   const [stockInList, setStockInList] = useState<StockInRecord[]>(() => {
-    const saved = localStorage.getItem(`cs_pos_v5_stockin${suffix}`);
-    return saved ? JSON.parse(saved) : initialStockIn;
+    try {
+      const saved = localStorage.getItem(`cs_pos_v5_stockin${suffix}`);
+      return saved ? JSON.parse(saved) : initialStockIn;
+    } catch {
+      return initialStockIn;
+    }
   });
 
   const [salesList, setSalesList] = useState<SaleRecord[]>(() => {
-    const saved = localStorage.getItem(`cs_pos_v5_sales${suffix}`);
-    return saved ? JSON.parse(saved) : initialSales;
+    try {
+      const saved = localStorage.getItem(`cs_pos_v5_sales${suffix}`);
+      return saved ? JSON.parse(saved) : initialSales;
+    } catch {
+      return initialSales;
+    }
   });
 
   const [activeTab, setActiveTab] = useState<string>('pos');
@@ -508,8 +524,12 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('cs_pos_v5_current_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('cs_pos_v5_current_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);

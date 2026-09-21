@@ -179,12 +179,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         
         {/* Card Header */}
         <div className="text-center mt-1 mb-5">
-          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-md border-2 border-emerald-200 shrink-0">
+          <div className="w-28 h-28 mx-auto mb-3 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-md border-2 border-emerald-200 shrink-0">
             <img 
-              src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" 
-              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.jpg'; }}
+              src="https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png" 
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
               alt="TCO Fresh Logo" 
-              className="w-full h-full object-cover" 
+              className="w-full h-full object-contain scale-[1.70] translate-x-[1.2%] translate-y-[7.6%]" 
             />
           </div>
           <h2 className="text-[28px] font-extrabold text-[#0D5C1E] tracking-tight leading-none mb-1">

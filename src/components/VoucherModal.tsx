@@ -111,12 +111,12 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                 <div className={`flex justify-between items-start ${printSize === 'A6' ? 'mb-2' : 'mb-10'}`}>
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                       <div className={`${printSize === 'A6' ? 'w-8 h-8' : 'w-12 h-12'} rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-xs shrink-0 border border-slate-200`}>
+                       <div className={`${printSize === 'A6' ? 'w-10 h-10' : 'w-16 h-16'} rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-xs shrink-0 border border-slate-200`}>
                           <img 
-                            src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" 
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.jpg'; }}
+                            src="https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png" 
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
                             alt="Logo" 
-                            className="w-full h-full object-cover" 
+                            className="w-full h-full object-contain scale-[1.70] translate-x-[1.2%] translate-y-[7.6%]" 
                           />
                        </div>
                        <h1 className={`${printSize === 'A6' ? 'text-lg' : 'text-3xl'} font-bold text-[#333B4F] tracking-tight`}>{shopInfo.name}</h1>
@@ -224,12 +224,12 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             >
               {/* Shop Branding */}
               <div className="text-center pb-3 border-b border-dashed border-slate-400">
-                <div className="w-12 h-12 mx-auto mb-2 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200 shadow-2xs">
+                <div className="w-14 h-14 mx-auto mb-2 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200 shadow-2xs bg-white">
                   <img 
-                    src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" 
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.jpg'; }}
+                    src="https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png" 
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
                     alt="Logo" 
-                    className="w-full h-full object-cover" 
+                    className="w-full h-full object-contain scale-[1.70] translate-x-[1.2%] translate-y-[7.6%]" 
                   />
                 </div>
                 <h1 className="text-base sm:text-lg font-bold text-slate-900 uppercase tracking-tight">

@@ -86,12 +86,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-inner shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-sm shrink-0">
               <img 
-                src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" 
-                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.jpg'; }}
+                src="https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png" 
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
                 alt="TCO Fresh Logo" 
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-contain scale-[1.70] translate-x-[1.2%] translate-y-[7.6%]" 
               />
             </div>
             <div>
@@ -162,12 +162,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Drawer Header */}
             <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0">
                   <img 
-                    src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" 
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.jpg'; }}
+                    src="https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png" 
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
                     alt="TCO Fresh Logo" 
-                    className="w-full h-full object-cover" 
+                    className="w-full h-full object-contain scale-[1.70] translate-x-[1.2%] translate-y-[7.6%]" 
                   />
                 </div>
                 <span className="font-bold text-sm text-white">Menu Navigation</span>
