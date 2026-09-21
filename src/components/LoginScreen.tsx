@@ -178,7 +178,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       <div className="w-full max-w-[380px] bg-[#E8F8EE] rounded-[32px] p-6 sm:p-7 shadow-[0_20px_50px_rgba(16,80,45,0.15)] border-4 border-white relative z-10 flex flex-col justify-between">
         
         {/* Card Header */}
-        <div className="text-center mt-2 mb-6">
+        <div className="text-center mt-1 mb-5">
+          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-md border-2 border-emerald-200 shrink-0">
+            <img 
+              src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" 
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.jpg'; }}
+              alt="TCO Fresh Logo" 
+              className="w-full h-full object-cover" 
+            />
+          </div>
           <h2 className="text-[28px] font-extrabold text-[#0D5C1E] tracking-tight leading-none mb-1">
             {isSignUp ? 'Sign up' : 'Log in'}
           </h2>

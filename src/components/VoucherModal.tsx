@@ -111,6 +111,14 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                 <div className={`flex justify-between items-start ${printSize === 'A6' ? 'mb-2' : 'mb-10'}`}>
                   <div>
                     <div className="flex items-center gap-3 mb-2">
+                       <div className={`${printSize === 'A6' ? 'w-8 h-8' : 'w-12 h-12'} rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-xs shrink-0 border border-slate-200`}>
+                          <img 
+                            src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" 
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.jpg'; }}
+                            alt="Logo" 
+                            className="w-full h-full object-cover" 
+                          />
+                       </div>
                        <h1 className={`${printSize === 'A6' ? 'text-lg' : 'text-3xl'} font-bold text-[#333B4F] tracking-tight`}>{shopInfo.name}</h1>
                     </div>
                     <p className={`${printSize === 'A6' ? 'text-xs' : 'text-sm'} text-slate-500 font-medium tracking-widest uppercase`}>{shopInfo.tagline}</p>
@@ -216,6 +224,14 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
             >
               {/* Shop Branding */}
               <div className="text-center pb-3 border-b border-dashed border-slate-400">
+                <div className="w-12 h-12 mx-auto mb-2 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200 shadow-2xs">
+                  <img 
+                    src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" 
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.jpg'; }}
+                    alt="Logo" 
+                    className="w-full h-full object-cover" 
+                  />
+                </div>
                 <h1 className="text-base sm:text-lg font-bold text-slate-900 uppercase tracking-tight">
                   {shopInfo.name}
                 </h1>
