@@ -87,7 +87,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-inner shrink-0">
-              <img src="https://i.postimg.cc/kGnnGwLw/Chat-GPT-Image-Aug-8-2026-10-27-14-AM.png" alt="TCO Fresh Logo" className="w-full h-full object-cover" />
+              <img src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" alt="TCO Fresh Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-base sm:text-lg font-bold tracking-tight text-white leading-tight">
@@ -158,7 +158,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center overflow-hidden shrink-0">
-                  <img src="https://i.postimg.cc/kGnnGwLw/Chat-GPT-Image-Aug-8-2026-10-27-14-AM.png" alt="TCO Fresh Logo" className="w-full h-full object-cover" />
+                  <img src="https://i.postimg.cc/G2j4htST/Image-20260921-143712-529.jpg" alt="TCO Fresh Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="font-bold text-sm text-white">Menu Navigation</span>
               </div>
