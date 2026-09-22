@@ -1,22 +1,53 @@
 import React, { useState } from 'react';
-import { Product, StockInRecord } from '../types';
-import { Plus, Search, Trash2 } from 'lucide-react';
+import { Product, StockInRecord, SaleRecord } from '../types';
+import { Plus, Search, Trash2, AlertOctagon } from 'lucide-react';
 
 interface StockInTabProps {
   products: Product[];
   stockInList: StockInRecord[];
+  salesList?: SaleRecord[];
   onAddStockIn: (stk: Omit<StockInRecord, 'id'>) => void;
   onDeleteStockIn: (id: string) => void;
+  onRecordManualWaste?: (waste: {
+    stockInId: string;
+    productCode: string;
+    productName: string;
+    qty: number;
+    purchasePrice: number;
+    reason?: string;
+    date: string;
+  }) => void;
 }
 
 export const StockInTab: React.FC<StockInTabProps> = ({
   products,
   stockInList,
+  salesList,
   onAddStockIn,
   onDeleteStockIn,
+  onRecordManualWaste,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWasteModalOpen, setIsWasteModalOpen] = useState(false);
+
+  // Helper to calculate exact current remaining inventory stock
+  const getProductStock = (productCode: string) => {
+    const totalIn = stockInList
+      .filter((s) => s.productCode === productCode)
+      .reduce((sum, s) => sum + (s.qty || 0), 0);
+
+    const totalSold = (salesList || [])
+      .filter((sale) => sale.status !== 'Refunded')
+      .reduce((sum, sale) => {
+        const itemQty = sale.items
+          .filter((i) => i.productCode === productCode)
+          .reduce((sSum, item) => sSum + (item.quantity || 0), 0);
+        return sum + itemQty;
+      }, 0);
+
+    return Math.max(0, totalIn - totalSold);
+  };
 
   // Form State
   const today = new Date().toISOString().split('T')[0];
@@ -25,6 +56,20 @@ export const StockInTab: React.FC<StockInTabProps> = ({
   const [qty, setQty] = useState<number | ''>('');
   const [purchasePrice, setPurchasePrice] = useState<number | ''>('');
   const [expiryDate, setExpiryDate] = useState('');
+
+  // Waste Form State
+  const [wasteDate, setWasteDate] = useState(today);
+  const [selectedStockInId, setSelectedStockInId] = useState('');
+  const [wasteQty, setWasteQty] = useState<number | ''>('');
+  const [wasteReason, setWasteReason] = useState('လူကြောင့် ပျက်စီး/အလေအလွင့်ဖြစ်ခြင်း');
+
+  const selectedTargetStockIn = stockInList.find((s) => s.id === selectedStockInId);
+  const currentProductStock = selectedTargetStockIn
+    ? getProductStock(selectedTargetStockIn.productCode)
+    : 0;
+  const maxAllowedWaste = selectedTargetStockIn
+    ? Math.min(selectedTargetStockIn.qty || 0, currentProductStock)
+    : 0;
 
   const handleOpenModal = () => {
     const activeProduct = products[0];
@@ -41,6 +86,25 @@ export const StockInTab: React.FC<StockInTabProps> = ({
     setExpiryDate(exp.toISOString().split('T')[0]);
 
     setIsModalOpen(true);
+  };
+
+  const handleOpenWasteModal = () => {
+    const availableStockIns = stockInList.filter(
+      (s) => (s.qty || 0) > 0 && getProductStock(s.productCode) > 0
+    );
+    if (availableStockIns.length > 0) {
+      setSelectedStockInId(availableStockIns[0].id);
+      const target = availableStockIns[0];
+      const stock = getProductStock(target.productCode);
+      const maxPossible = Math.min(target.qty || 0, stock);
+      setWasteQty(maxPossible > 0 ? 1 : '');
+    } else {
+      setSelectedStockInId('');
+      setWasteQty('');
+    }
+    setWasteDate(today);
+    setWasteReason('လူကြောင့် ပျက်စီး/အလေအလွင့်ဖြစ်ခြင်း');
+    setIsWasteModalOpen(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -64,6 +128,34 @@ export const StockInTab: React.FC<StockInTabProps> = ({
     });
 
     setIsModalOpen(false);
+  };
+
+  const handleWasteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStockInId || !wasteQty || Number(wasteQty) <= 0) return;
+
+    const targetStockIn = stockInList.find((s) => s.id === selectedStockInId);
+    if (!targetStockIn) return;
+
+    const numWasteQty = Number(wasteQty);
+    if (numWasteQty > maxAllowedWaste) {
+      alert(`လက်ရှိစတော့ကျန် (${maxAllowedWaste} ခု) ထက် ပိုနေပါသည် ပြန်လည်စစ်ဆေးပါ။`);
+      return;
+    }
+
+    if (onRecordManualWaste) {
+      onRecordManualWaste({
+        stockInId: targetStockIn.id,
+        productCode: targetStockIn.productCode,
+        productName: targetStockIn.productName,
+        qty: numWasteQty,
+        purchasePrice: targetStockIn.purchasePrice || 0,
+        reason: wasteReason,
+        date: wasteDate,
+      });
+    }
+
+    setIsWasteModalOpen(false);
   };
 
   const filteredList = stockInList.filter(
@@ -98,6 +190,14 @@ export const StockInTab: React.FC<StockInTabProps> = ({
           >
             <Plus className="w-4 h-4" />
             <span>အဝင်သစ် ထည့်မည်</span>
+          </button>
+
+          <button
+            onClick={handleOpenWasteModal}
+            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold flex items-center gap-2 transition-colors shadow-xs cursor-pointer"
+          >
+            <AlertOctagon className="w-4 h-4" />
+            <span>Waste စာရင်း ထည့်မည်</span>
           </button>
         </div>
       </div>
@@ -301,6 +401,143 @@ export const StockInTab: React.FC<StockInTabProps> = ({
           </div>
         </div>
       )}
+
+      {/* Manual Waste Entry Modal */}
+      {isWasteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-lg w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-2 border-b pb-3 border-slate-200">
+              <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
+                <AlertOctagon className="w-4 h-4" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-800">
+                စွန့်ပစ်/ပျက်စီး (Waste) စာရင်းသွင်းရန်
+              </h3>
+            </div>
+
+            <form onSubmit={handleWasteSubmit} className="space-y-4 text-xs sm:text-sm">
+              <div>
+                <label className="block text-slate-700 font-semibold mb-1">
+                  နုတ်ယူမည့် အဝင်ပစ္စည်း ရွေးချယ်ပါ *
+                </label>
+                <select
+                  required
+                  value={selectedStockInId}
+                  onChange={(e) => setSelectedStockInId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-rose-500 bg-white"
+                >
+                  {stockInList
+                    .filter((s) => (s.qty || 0) > 0 && getProductStock(s.productCode) > 0)
+                    .map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.productCode} - {s.productName} (လက်ရှိကျန်: {getProductStock(s.productCode)} ခု)
+                      </option>
+                    ))}
+                </select>
+                {stockInList.filter((s) => (s.qty || 0) > 0 && getProductStock(s.productCode) > 0).length === 0 && (
+                  <p className="text-[11px] text-rose-500 mt-1 font-medium">
+                    လက်ကျန်ရှိသော စတော့စာရင်း မရှိပါ။
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">
+                    စွန့်ပစ်/နုတ်ယူမည့် အရေအတွက် *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    max={maxAllowedWaste || 1}
+                    value={wasteQty}
+                    onChange={(e) => setWasteQty(e.target.value ? Number(e.target.value) : '')}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none ${
+                      Number(wasteQty) > maxAllowedWaste
+                        ? 'border-rose-500 bg-rose-50 text-rose-700'
+                        : 'border-slate-300 focus:border-rose-500'
+                    }`}
+                    placeholder="1"
+                  />
+                  {selectedTargetStockIn && (
+                    <span className="text-[11px] text-slate-500 block mt-0.5 font-medium">
+                      (လက်ရှိစတော့ကျန်: {currentProductStock} ခု)
+                    </span>
+                  )}
+                  {Number(wasteQty) > maxAllowedWaste && (
+                    <p className="text-[11px] text-rose-600 font-semibold mt-1">
+                      လက်ရှိစတော့ကျန် ({maxAllowedWaste} ခု) ထက် ပိုနေပါသည် ပြန်လည်စစ်ဆေးပါ။
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">
+                    ရက်စွဲ *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={wasteDate}
+                    onChange={(e) => setWasteDate(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-rose-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-semibold mb-1">
+                  စွန့်ပစ်ရသည့် အကြောင်းအရင်း / ဖြစ်ပွားသည့် Error *
+                </label>
+                <select
+                  required
+                  value={wasteReason}
+                  onChange={(e) => setWasteReason(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-rose-500 bg-white"
+                >
+                  <option value="လူကြောင့် ပျက်စီး/အလေအလွင့်ဖြစ်ခြင်း">
+                    ၁။ လူကြောင့် ပျက်စီး/အလေအလွင့်ဖြစ်ခြင်း
+                  </option>
+                  <option value="အိတ်ပေါက်ပြဲ/ထုပ်ပိုးမှု ပျက်စီးခြင်း">
+                    ၂။ အိတ်ပေါက်ပြဲ/ထုပ်ပိုးမှု ပျက်စီးခြင်း
+                  </option>
+                  <option value="အအေးမလုံလောက်၍ အရည်ပျော်/ပျက်စီးခြင်း">
+                    ၃။ အအေးမလုံလောက်၍ အရည်ပျော်/ပျက်စီးခြင်း
+                  </option>
+                  <option value="အရည်အသွေးမမီ/အရောင်အနံ့ပြောင်းခြင်း">
+                    ၄။ အရည်အသွေးမမီ/အရောင်အနံ့ပြောင်းခြင်း
+                  </option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setIsWasteModalOpen(false)}
+                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium cursor-pointer"
+                >
+                  မလုပ်တော့ပါ
+                </button>
+                <button
+                  type="submit"
+                  disabled={
+                    !selectedStockInId ||
+                    !wasteQty ||
+                    Number(wasteQty) <= 0 ||
+                    Number(wasteQty) > maxAllowedWaste ||
+                    maxAllowedWaste <= 0
+                  }
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 disabled:bg-slate-300 text-white rounded-lg font-medium shadow-xs cursor-pointer"
+                >
+                  Waste စာရင်းသွင်းပြီး စတော့မှနုတ်မည်
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+

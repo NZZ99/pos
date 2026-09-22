@@ -67,6 +67,25 @@
       },
       "required": ["id", "date", "productCode", "productName", "qty", "purchasePrice", "totalCost"]
     },
+    "WasteRecord": {
+      "title": "WasteRecord",
+      "description": "Manually recorded or damaged stock waste",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "productCode": { "type": "string" },
+        "productName": { "type": "string" },
+        "qty": { "type": "number" },
+        "purchasePrice": { "type": "number" },
+        "totalCost": { "type": "number" },
+        "reason": { "type": "string" },
+        "stockInId": { "type": "string" },
+        "expiryDate": { "type": "string" },
+        "storageLocation": { "type": "string" }
+      },
+      "required": ["id", "date", "productCode", "productName", "qty", "purchasePrice", "totalCost", "reason"]
+    },
     "SaleRecord": {
       "title": "SaleRecord",
       "description": "Completed transaction record",
@@ -124,6 +143,10 @@
     "users/{userId}/sales/{saleId}": {
       "schema": "SaleRecord",
       "description": "Sales and vouchers history belonging to the user"
+    },
+    "users/{userId}/waste/{wasteId}": {
+      "schema": "WasteRecord",
+      "description": "Manual and damaged stock waste records"
     }
   }
 }

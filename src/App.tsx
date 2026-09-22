@@ -5,7 +5,7 @@ import {
   initialSales,
   initialShopInfo,
 } from './data/initialData';
-import { Product, StockInRecord, SaleRecord, ShopInfo, TabLabels, User } from './types';
+import { Product, StockInRecord, SaleRecord, ShopInfo, TabLabels, User, WasteRecord } from './types';
 import { Navbar } from './components/Navbar';
 import { POSTab } from './components/POSTab';
 import { ProductsTab } from './components/ProductsTab';
@@ -84,6 +84,15 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
       return saved ? JSON.parse(saved) : initialStockIn;
     } catch {
       return initialStockIn;
+    }
+  });
+
+  const [wasteList, setWasteList] = useState<WasteRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem(`cs_pos_v5_waste${suffix}`);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
     }
   });
 
@@ -173,6 +182,19 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
             list.sort((a, b) => b.id.localeCompare(a.id));
             setStockInList(list);
             localStorage.setItem(`cs_pos_v5_stockin${suffix}`, JSON.stringify(list));
+          }
+
+          // Fetch wasteList directly from Firestore
+          const wasteCol = collection(db, 'users', encodedEmail, 'waste');
+          const wasteSnap = await getDocs(wasteCol).catch(err => {
+            handleFirestoreError(err, OperationType.LIST, `users/${encodedEmail}/waste`);
+          });
+          if (wasteSnap && active) {
+            const list: WasteRecord[] = [];
+            wasteSnap.forEach(d => list.push(d.data() as WasteRecord));
+            list.sort((a, b) => b.id.localeCompare(a.id));
+            setWasteList(list);
+            localStorage.setItem(`cs_pos_v5_waste${suffix}`, JSON.stringify(list));
           }
 
           // Fetch salesList directly from Firestore
@@ -370,6 +392,108 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     );
   };
 
+  // Manual Waste Handler (Deducts quantity from stockIn item and records in wasteList)
+  const handleRecordManualWaste = async (wasteData: {
+    stockInId: string;
+    productCode: string;
+    productName: string;
+    qty: number;
+    purchasePrice: number;
+    reason?: string;
+    date: string;
+  }) => {
+    const targetStockIn = stockInList.find((s) => s.id === wasteData.stockInId);
+    if (!targetStockIn) {
+      showToast('ပစ္စည်းအဝင် အသုတ်ကို ရှာမတွေ့ပါ။');
+      return;
+    }
+
+    const wasteQty = wasteData.qty;
+    const newStockInQty = Math.max(0, (targetStockIn.qty || 0) - wasteQty);
+    const newStockInTotalCost = newStockInQty * (targetStockIn.purchasePrice || 0);
+
+    const updatedStockInList = stockInList.map((s) => {
+      if (s.id === targetStockIn.id) {
+        return {
+          ...s,
+          qty: newStockInQty,
+          totalCost: newStockInTotalCost,
+        };
+      }
+      return s;
+    });
+
+    const newWasteRecord: WasteRecord = {
+      id: `waste-${Date.now()}`,
+      stockInId: targetStockIn.id,
+      productCode: wasteData.productCode,
+      productName: wasteData.productName,
+      qty: wasteQty,
+      purchasePrice: wasteData.purchasePrice,
+      lossAmount: wasteQty * wasteData.purchasePrice,
+      date: wasteData.date,
+      reason: wasteData.reason || 'လူကြောင့် ပျက်စီး/အလေအလွင့် စွန့်ပစ်ခြင်း',
+      type: 'Manual',
+    };
+
+    const nextWasteList = [newWasteRecord, ...wasteList];
+
+    // Update Local States and LocalStorage
+    setStockInList(updatedStockInList);
+    localStorage.setItem(`cs_pos_v5_stockin${suffix}`, JSON.stringify(updatedStockInList));
+
+    setWasteList(nextWasteList);
+    localStorage.setItem(`cs_pos_v5_waste${suffix}`, JSON.stringify(nextWasteList));
+
+    // Update in Firestore
+    try {
+      await setDoc(
+        doc(db, 'users', encodedEmail, 'stockIn', targetStockIn.id),
+        sanitizeForFirestore({
+          ...targetStockIn,
+          qty: newStockInQty,
+          totalCost: newStockInTotalCost,
+        })
+      ).catch((err) => {
+        handleFirestoreError(err, OperationType.UPDATE, `users/${encodedEmail}/stockIn/${targetStockIn.id}`);
+      });
+
+      await setDoc(
+        doc(db, 'users', encodedEmail, 'waste', newWasteRecord.id),
+        sanitizeForFirestore(newWasteRecord)
+      ).catch((err) => {
+        handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/waste/${newWasteRecord.id}`);
+      });
+
+      showToast(`Waste စာရင်း (${wasteData.productName} - ${wasteQty} ခု) ကို ထည့်သွင်းပြီး အဝင်စာရင်းမှ နုတ်ယူလိုက်ပါပြီ။`);
+    } catch (err) {
+      console.error('Error recording manual waste:', err);
+    }
+  };
+
+  const handleDeleteWaste = async (id: string) => {
+    const wasteItem = wasteList.find((w) => w.id === id);
+    const wasteName = wasteItem ? ` (${wasteItem.productName}) ` : ' ';
+    requestPinAuth(
+      'Waste စာရင်းဖျက်ရန် အတည်ပြုပါ',
+      `Waste စာရင်း${wasteName}ကို စနစ်ထဲမှ လုံးဝဖျက်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
+      async () => {
+        const nextWaste = wasteList.filter((w) => w.id !== id);
+        setWasteList(nextWaste);
+        localStorage.setItem(`cs_pos_v5_waste${suffix}`, JSON.stringify(nextWaste));
+        try {
+          await deleteDoc(doc(db, 'users', encodedEmail, 'waste', id)).catch((err) => {
+            handleFirestoreError(err, OperationType.DELETE, `users/${encodedEmail}/waste/${id}`);
+          });
+          showToast('Waste စာရင်း ဖျက်ပြီးပါပြီ။');
+        } catch (err) {
+          console.error(err);
+        }
+      },
+      'delete'
+    );
+  };
+
   // Sales handlers
   const handleCompleteSale = async (sale: SaleRecord) => {
     const nextSales = [sale, ...salesList];
@@ -505,8 +629,10 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
           <StockInTab
             products={products}
             stockInList={stockInList}
+            salesList={salesList}
             onAddStockIn={handleAddStockIn}
             onDeleteStockIn={handleDeleteStockIn}
+            onRecordManualWaste={handleRecordManualWaste}
           />
         )}
 
@@ -522,8 +648,10 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
           <WasteTab
             products={products}
             stockInList={stockInList}
+            wasteList={wasteList}
             shopInfo={shopInfo}
             onDeleteStockIn={handleDeleteStockIn}
+            onDeleteWaste={handleDeleteWaste}
           />
         )}
 

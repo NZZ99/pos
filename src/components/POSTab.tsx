@@ -69,6 +69,8 @@ export const POSTab: React.FC<POSTabProps> = ({
   };
 
   const filteredProducts = products.filter((p) => {
+    const stock = getProductStock(p.code);
+    if (stock <= 0) return false;
     const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
     const matchesSearch =
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,6 +79,12 @@ export const POSTab: React.FC<POSTabProps> = ({
   });
 
   const addToCart = (product: Product) => {
+    const availableStock = getProductStock(product.code);
+    if (availableStock <= 0) {
+      alert(`ကုန်ပစ္စည်း (${product.name}) သည် စတော့လက်ကျန် မရှိတော့ပါသဖြင့် ရောင်းချ၍ မရပါ။`);
+      return;
+    }
+
     const price = saleType === 'Wholesale' ? product.wholesalePrice : product.retailPrice;
 
     // Check if item already exists in cart with same product code
@@ -86,6 +94,10 @@ export const POSTab: React.FC<POSTabProps> = ({
       const updatedCart = [...cart];
       const existing = updatedCart[existingIndex];
       const newQty = existing.quantity + 1;
+      if (newQty > availableStock) {
+        alert(`ကုန်ပစ္စည်း (${product.name}) လက်ကျန်စတော့ (${availableStock}) ထက် ပို၍ မထည့်နိုင်ပါ။`);
+        return;
+      }
       updatedCart[existingIndex] = {
         ...existing,
         quantity: newQty,
@@ -110,6 +122,14 @@ export const POSTab: React.FC<POSTabProps> = ({
     if (quantity <= 0) {
       removeFromCart(cartId);
       return;
+    }
+    const targetItem = cart.find((i) => i.id === cartId);
+    if (targetItem) {
+      const availableStock = getProductStock(targetItem.productCode);
+      if (quantity > availableStock) {
+        alert(`ကုန်ပစ္စည်း (${targetItem.productName}) လက်ကျန်စတော့ (${availableStock}) ထက် ပို၍ မရောင်းနိုင်ပါ။`);
+        quantity = availableStock;
+      }
     }
     setCart((prev) =>
       prev.map((item) => {
@@ -172,6 +192,19 @@ export const POSTab: React.FC<POSTabProps> = ({
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
+
+    // Validate stock for each item in cart
+    for (const item of cart) {
+      const currentStock = getProductStock(item.productCode);
+      if (currentStock <= 0) {
+        alert(`ကုန်ပစ္စည်း (${item.productName}) သည် စတော့ကုန်သွားပါသဖြင့် ဘောင်ချာမထုတ်နိုင်ပါ။ Cart မှ ဖယ်ရှားပေးပါ။`);
+        return;
+      }
+      if (item.quantity > currentStock) {
+        alert(`ကုန်ပစ္စည်း (${item.productName}) ရောင်းချမည့် အရေအတွက် (${item.quantity}) သည် လက်ကျန်စတော့ (${currentStock}) ထက် ကျော်လွန်နေပါသည်။`);
+        return;
+      }
+    }
 
     const todayStr = new Date().toISOString().split('T')[0];
     const timeStr = new Date().toLocaleTimeString('en-US', {
@@ -448,7 +481,7 @@ export const POSTab: React.FC<POSTabProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="ဥပမာ - မြောက်ဥက္ကလာ၊ လှိုင်သာယာ၊ တောင်ဒဂုံ"
+                  placeholder="နယ်မြေ / ဧရိယာ ရိုက်ထည့်ပါ"
                   value={customerArea}
                   onChange={(e) => setCustomerArea(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500"

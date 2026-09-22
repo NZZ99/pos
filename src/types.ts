@@ -63,6 +63,19 @@ export interface ShopInfo {
   settingsPin?: string;
 }
 
+export interface WasteRecord {
+  id: string;
+  stockInId?: string;
+  productCode: string;
+  productName: string;
+  qty: number;
+  purchasePrice: number;
+  lossAmount: number;
+  date: string; // YYYY-MM-DD
+  reason?: string;
+  type?: 'Manual' | 'Expired';
+}
+
 export interface TabLabels {
   pos: string;
   products: string;
