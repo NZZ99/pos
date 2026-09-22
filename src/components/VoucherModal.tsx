@@ -104,7 +104,7 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                 }`} 
                 id="voucher-printable-area"
               >
-                <img src="https://i.postimg.cc/BnMDmH0x/Colorful-minimal-layout-with-blank-white-space-for-adding-elements-Premium-Vector.jpg" alt="" className="absolute inset-0 w-full h-full object-fill z-0 print:block" />
+                <img src="/voucher-bg.jpg" onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://i.postimg.cc/BnMDmH0x/Colorful-minimal-layout-with-blank-white-space-for-adding-elements-Premium-Vector.jpg'; }} alt="" className="absolute inset-0 w-full h-full object-fill z-0 print:block" />
                 
               <div className={`relative z-10 flex flex-col h-full ${printSize === 'A6' ? 'p-4 print:p-4' : 'p-10 sm:p-14 print:p-12'} flex-1`}>
                 {/* Header */}
@@ -113,8 +113,8 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                     <div className="flex items-center gap-3 mb-2">
                        <div className={`${printSize === 'A6' ? 'w-10 h-10' : 'w-16 h-16'} rounded-xl bg-white flex items-center justify-center overflow-hidden shadow-xs shrink-0 border border-slate-200`}>
                           <img 
-                            src="https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png" 
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
+                            src="/logo.png" 
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png'; }}
                             alt="Logo" 
                             className="w-full h-full object-contain scale-[1.70] translate-x-[1.2%] translate-y-[7.6%]" 
                           />
@@ -226,8 +226,8 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
               <div className="text-center pb-3 border-b border-dashed border-slate-400">
                 <div className="w-14 h-14 mx-auto mb-2 rounded-xl overflow-hidden flex items-center justify-center border border-slate-200 shadow-2xs bg-white">
                   <img 
-                    src="https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png" 
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.png'; }}
+                    src="/logo.png" 
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = 'https://i.postimg.cc/QMhhm3bh/Image-20260921-143712-529-removebg-preview.png'; }}
                     alt="Logo" 
                     className="w-full h-full object-contain scale-[1.70] translate-x-[1.2%] translate-y-[7.6%]" 
                   />
