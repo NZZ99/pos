@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { SaleRecord, TimePeriodFilter } from '../types';
+import React, { useState, useEffect } from 'react';
+import { SaleRecord, TimePeriodFilter, Product, StockInRecord, ShopInfo } from '../types';
+import { WasteTab } from './WasteTab';
+import { SettingsPinLock } from './SettingsPinLock';
 import {
   Calendar,
   Search,
@@ -11,10 +13,15 @@ import {
   Download,
   RotateCcw,
   Trash2,
+  Lock,
 } from 'lucide-react';
 
 interface ReportsTabProps {
   salesList: SaleRecord[];
+  products?: Product[];
+  stockInList?: StockInRecord[];
+  shopInfo?: ShopInfo;
+  accountPassword?: string;
   onOpenVoucher: (sale: SaleRecord) => void;
   onDeleteSale: (id: string) => void;
   onRefundSale?: (id: string, reason?: string) => void;
@@ -23,21 +30,37 @@ interface ReportsTabProps {
 
 export const ReportsTab: React.FC<ReportsTabProps> = ({
   salesList,
+  products = [],
+  stockInList = [],
+  shopInfo,
+  accountPassword,
   onOpenVoucher,
   onDeleteSale,
   onRefundSale,
   onExportExcel,
 }) => {
+  const [pinLock, setPinLock] = useState<string | null>(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+
+  useEffect(() => {
+    const savedPin = shopInfo?.settingsPin || '123456';
+    if (savedPin) {
+      setPinLock(savedPin);
+      setIsUnlocked(false);
+    } else {
+      setIsUnlocked(true);
+      setPinLock(null);
+    }
+  }, [shopInfo?.settingsPin]);
+
+  const [reportType, setReportType] = useState<'sales' | 'waste'>('sales');
   const [periodFilter, setPeriodFilter] = useState<TimePeriodFilter>('today');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [saleTypeFilter, setSaleTypeFilter] = useState<string>('All');
   const [paymentFilter, setPaymentFilter] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
-
-  // Modals for iframe-safe confirmation
-  const [refundModalSale, setRefundModalSale] = useState<SaleRecord | null>(null);
-  const [refundReason, setRefundReason] = useState<string>('မှားယွင်းရောင်းချမိခြင်း / ပစ္စည်းပြန်အမ်းခြင်း');
-  const [deleteModalSale, setDeleteModalSale] = useState<SaleRecord | null>(null);
 
   // Helper date calculators
   const getFilteredSales = () => {
@@ -45,16 +68,26 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
     const now = new Date();
 
     return salesList.filter((sale) => {
-      // Time Period Filter
-      const saleDate = new Date(sale.date);
+      // Time Period Filter (Start Date & End Date Range or Preset)
+      const saleDateStr = sale.date ? sale.date.split('T')[0].trim() : '';
       let matchesPeriod = true;
 
-      if (periodFilter === 'today') {
-        matchesPeriod = sale.date === todayStr;
+      if (startDate && endDate) {
+        const minD = startDate <= endDate ? startDate : endDate;
+        const maxD = startDate <= endDate ? endDate : startDate;
+        matchesPeriod = saleDateStr >= minD && saleDateStr <= maxD;
+      } else if (startDate) {
+        matchesPeriod = saleDateStr >= startDate;
+      } else if (endDate) {
+        matchesPeriod = saleDateStr <= endDate;
+      } else if (periodFilter === 'today') {
+        matchesPeriod = saleDateStr === todayStr;
       } else if (periodFilter === 'weekly') {
+        const saleDate = new Date(saleDateStr);
         const diffDays = (now.getTime() - saleDate.getTime()) / (1000 * 3600 * 24);
         matchesPeriod = diffDays >= 0 && diffDays <= 7;
       } else if (periodFilter === 'monthly') {
+        const saleDate = new Date(saleDateStr);
         matchesPeriod =
           saleDate.getMonth() === now.getMonth() &&
           saleDate.getFullYear() === now.getFullYear();
@@ -107,10 +140,19 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
     .filter((s) => s.paymentMethod === 'Credit')
     .reduce((sum, s) => sum + s.grandTotal, 0);
 
-  const handleRefundClick = (sale: SaleRecord) => {
-    setRefundModalSale(sale);
-    setRefundReason('မှားယွင်းရောင်းချမိခြင်း / ပစ္စည်းပြန်အမ်းခြင်း');
-  };
+  if (!isUnlocked && pinLock) {
+    return (
+      <div className="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-xs max-w-md mx-auto my-8">
+        <SettingsPinLock
+          correctPin={pinLock}
+          accountPassword={accountPassword}
+          title="အရောင်းစာရင်း အစီရင်ခံစာ လုံခြုံရေး PIN"
+          description="အရောင်းမှတ်တမ်းနှင့် အစီရင်ခံစာများကို ဝင်ရောက်ကြည့်ရှုရန် Security PIN (သို့မဟုတ် Password) ရိုက်ထည့်ပေးပါ။"
+          onUnlock={() => setIsUnlocked(true)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -120,131 +162,252 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
             <span>အရောင်းမှတ်တမ်းနှင့် အစီရင်ခံစာများ</span>
             <span className="text-xs bg-indigo-100 text-indigo-700 font-semibold px-2.5 py-0.5 rounded-full">
-              Sales Reports
+              {reportType === 'sales' ? 'Sales Reports' : 'Waste Reports'}
             </span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            တစ်ရက်စာ၊ တစ်ပတ်စာ၊ တစ်လစာ စာရင်းများကို သီးခြားခွဲခြား ကြည့်ရှုစစ်ဆေးနိုင်ပါသည်။
+            {reportType === 'sales'
+              ? 'တစ်ရက်စာ၊ တစ်ပတ်စာ၊ တစ်လစာ အရောင်းစာရင်းများကို သီးခြားခွဲခြား ကြည့်ရှုစစ်ဆေးနိုင်ပါသည်။'
+              : 'Expired Date သက်တမ်းကုန်ဆုံးသွားသော ပစ္စည်းများနှင့် Waste စာရင်း အစီရင်ခံစာဖြစ်ပါသည်။'}
           </p>
         </div>
 
-        {onExportExcel && (
-          <button
-            onClick={onExportExcel}
-            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm border border-emerald-500 hover:shadow-md"
-            title="အရောင်းမှတ်တမ်း အစီရင်ခံစာများကို Excel (.xlsx) ဖိုင်အဖြစ် ဒေါင်းလုဒ်ဆွဲမည်"
-          >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
-            <span>Excel (.xlsx) ဒေါင်းလုဒ်ဆွဲရန်</span>
-            <Download className="w-3.5 h-3.5 text-emerald-200" />
-          </button>
-        )}
-      </div>
-
-      {/* Filter Tabs: တစ်ရက်စာ / တစ်ပတ်စာ / တစ်လစာ / အားလုံး */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-indigo-600" />
-            <span className="text-xs font-bold text-slate-800">ကာလအလိုက် စာရင်းရွေးချယ်ရန်:</span>
-          </div>
-
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Report Type Selector: အရောင်း / Waste */}
           <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
             <button
-              onClick={() => setPeriodFilter('today')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                periodFilter === 'today'
+              type="button"
+              onClick={() => setReportType('sales')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                reportType === 'sales'
                   ? 'bg-indigo-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              တစ်ရက်စာ (Today)
+              <Receipt className="w-3.5 h-3.5" />
+              <span>အရောင်း စာရင်း</span>
             </button>
             <button
-              onClick={() => setPeriodFilter('weekly')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                periodFilter === 'weekly'
-                  ? 'bg-indigo-600 text-white shadow-xs'
+              type="button"
+              onClick={() => setReportType('waste')}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                reportType === 'waste'
+                  ? 'bg-rose-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              တစ်ပတ်စာ (Weekly)
-            </button>
-            <button
-              onClick={() => setPeriodFilter('monthly')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                periodFilter === 'monthly'
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              တစ်လစာ (Monthly)
-            </button>
-            <button
-              onClick={() => setPeriodFilter('custom')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                periodFilter === 'custom'
-                  ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              စာရင်းအားလုံး (All)
+              <span>🗑️ Waste စာရင်း</span>
             </button>
           </div>
+
+          {reportType === 'sales' && onExportExcel && (
+            <button
+              onClick={onExportExcel}
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm border border-emerald-500 hover:shadow-md"
+              title="အရောင်းမှတ်တမ်း အစီရင်ခံစာများကို Excel (.xlsx) ဖိုင်အဖြစ် ဒေါင်းလုဒ်ဆွဲမည်"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-100" />
+              <span>Excel (.xlsx) ဒေါင်းလုဒ်ဆွဲရန်</span>
+              <Download className="w-3.5 h-3.5 text-emerald-200" />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsUnlocked(false)}
+            className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-slate-300 shadow-2xs"
+            title="အရောင်းစာရင်းကို ပြန်လည်ပိတ် (Lock) ထားမည်"
+          >
+            <Lock className="w-3.5 h-3.5 text-slate-600" />
+            <span>စာရင်းပြန်ပိတ်မည်</span>
+          </button>
         </div>
+      </div>
 
-        {/* Secondary Filter Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="ဘောင်ချာ၊ ဝယ်သူအမည် သို့မဟုတ် ပစ္စည်း..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            />
-          </div>
+      {reportType === 'waste' ? (
+        <WasteTab
+          products={products}
+          stockInList={stockInList}
+          shopInfo={shopInfo}
+        />
+      ) : (
+        <>
+          {/* Filter Tabs: တစ်ရက်စာ / တစ်ပတ်စာ / တစ်လစာ / အားလုံး */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-indigo-600" />
+                <span className="text-xs font-bold text-slate-800">ကာလအလိုက် စာရင်းရွေးချယ်ရန်:</span>
+                {(startDate || endDate) && (
+                  <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200">
+                    {startDate ? startDate : '...'} မှ {endDate ? endDate : '...'} ထိ
+                  </span>
+                )}
+              </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
-              အမျိုးအစား:
-            </span>
-            <select
-              value={saleTypeFilter}
-              onChange={(e) => setSaleTypeFilter(e.target.value)}
-              className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
-            >
-              <option value="All">အားလုံး (All Types)</option>
-              <option value="Retail">လက်လီ (Retail)</option>
-              <option value="Wholesale">လက်ကား (Wholesale)</option>
+              <div className="bg-slate-100 p-1 rounded-xl flex items-center gap-1 border border-slate-200">
+                {(startDate || endDate) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStartDate('');
+                      setEndDate('');
+                      setPeriodFilter('today');
+                    }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+                    title="ရက်စွဲများကို မူလအတိုင်း ပြန်လည်သတ်မှတ်မည်"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>မူလအတိုင်းပြန်လည်သတ်မှတ်မည်</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                    setPeriodFilter('today');
+                  }}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    !startDate && !endDate && periodFilter === 'today'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  တစ်ရက်စာ (Today)
+                </button>
+                <button
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                    setPeriodFilter('weekly');
+                  }}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    !startDate && !endDate && periodFilter === 'weekly'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  တစ်ပတ်စာ (Weekly)
+                </button>
+                <button
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                    setPeriodFilter('monthly');
+                  }}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    !startDate && !endDate && periodFilter === 'monthly'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  တစ်လစာ (Monthly)
+                </button>
+                <button
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                    setPeriodFilter('custom');
+                  }}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    !startDate && !endDate && periodFilter === 'custom'
+                      ? 'bg-indigo-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  စာရင်းအားလုံး (All)
+                </button>
+              </div>
+            </div>
+
+            {/* Secondary Filter Bar with Start Date & End Date */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-2 border-t border-slate-100">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="ဘောင်ချာ၊ ဝယ်သူအမည်..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                  အမျိုးအစား:
+                </span>
+                <select
+                  value={saleTypeFilter}
+                  onChange={(e) => setSaleTypeFilter(e.target.value)}
+                  className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="All">အားလုံး</option>
+                  <option value="Retail">လက်လီ</option>
+                  <option value="Wholesale">လက်ကား</option>
+                </select>
+              </div>
+
+              {/* Start Date Picker */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                  Start date:
+                </span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className={`w-full py-1.5 px-2 bg-slate-50 border rounded-xl text-xs focus:outline-none font-medium ${
+                    startDate
+                      ? 'border-indigo-500 bg-indigo-50/50 text-indigo-900 font-semibold'
+                      : 'border-slate-200 text-slate-700 focus:border-indigo-500'
+                  }`}
+                  title="စတင်မည့်ရက် (Start date)"
+                />
+              </div>
+
+              {/* End Date Picker - No ✕ button */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                  End date:
+                </span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className={`w-full py-1.5 px-2 bg-slate-50 border rounded-xl text-xs focus:outline-none font-medium ${
+                    endDate
+                      ? 'border-indigo-500 bg-indigo-50/50 text-indigo-900 font-semibold'
+                      : 'border-slate-200 text-slate-700 focus:border-indigo-500'
+                  }`}
+                  title="ပြီးဆုံးမည့်ရက် (End date)"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">ငွေရှင်းပုံစံ:</span>
+                <select
+                  value={paymentFilter}
+                  onChange={(e) => setPaymentFilter(e.target.value)}
+                  className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                >
+              <option value="All">အားလုံး</option>
+              <option value="Cash">Cash</option>
+              <option value="KPay">KPay/Wave</option>
+              <option value="Credit">Credit</option>
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">ငွေရှင်းပုံစံ:</span>
-            <select
-              value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
-              className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
-            >
-              <option value="All">အားလုံး (All Payments)</option>
-              <option value="Cash">Cash (ငွေသား)</option>
-              <option value="KPay">KPay / Wave</option>
-              <option value="Credit">Credit (အကြွေး)</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span className="text-xs text-slate-500 font-medium whitespace-nowrap">အခြေအနေ:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-semibold text-slate-700"
+              className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-semibold text-slate-700"
             >
-              <option value="All">အားလုံး (All Status)</option>
-              <option value="Completed">အရောင်းပြီးစီး (Completed)</option>
-              <option value="Refunded">Refund ပြုလုပ်ထားသော (Refunded)</option>
+              <option value="All">အားလုံး</option>
+              <option value="Completed">ပြီးစီး</option>
+              <option value="Refunded">Refunded</option>
             </select>
           </div>
         </div>
@@ -453,7 +616,8 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                                 </span>
                                 {onDeleteSale && (
                                   <button
-                                    onClick={() => setDeleteModalSale(sale)}
+                                    type="button"
+                                    onClick={() => onDeleteSale(sale.id)}
                                     className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                                     title="စာရင်းမှ လုံးဝဖျက်ပစ်မည်"
                                   >
@@ -463,18 +627,22 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                               </div>
                             ) : (
                               <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => handleRefundClick(sale)}
-                                  className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md font-semibold text-xs flex items-center gap-1 border border-rose-200 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
-                                  title="ဤအရောင်းမှတ်တမ်းကို ပယ်ဖျက်ပြီး Refund ပြုလုပ်မည် (စတော့ကျန် စာရင်းထဲသို့ ကုန်ပစ္စည်း ပြန်လည် ဝင်ရောက်သွားပါမည်)"
-                                >
-                                  <RotateCcw className="w-3.5 h-3.5" />
-                                  <span>Refund</span>
-                                </button>
+                                {onRefundSale && (
+                                  <button
+                                    type="button"
+                                    onClick={() => onRefundSale(sale.id)}
+                                    className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md font-semibold text-xs flex items-center gap-1 border border-rose-200 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
+                                    title="ဤအရောင်းမှတ်တမ်းကို ပယ်ဖျက်ပြီး Refund ပြုလုပ်မည် (စတော့ကျန် စာရင်းထဲသို့ ကုန်ပစ္စည်း ပြန်လည် ဝင်ရောက်သွားပါမည်)"
+                                  >
+                                    <RotateCcw className="w-3.5 h-3.5" />
+                                    <span>Refund</span>
+                                  </button>
+                                )}
 
                                 {onDeleteSale && (
                                   <button
-                                    onClick={() => setDeleteModalSale(sale)}
+                                    type="button"
+                                    onClick={() => onDeleteSale(sale.id)}
                                     className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                                     title="စာရင်းမှ ဖျက်မည်"
                                   >
@@ -509,124 +677,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </table>
         </div>
       </div>
-
-      {/* Refund Modal */}
-      {refundModalSale && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center gap-3 text-rose-600 border-b pb-3 border-slate-100">
-              <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center font-bold">
-                <RotateCcw className="w-5 h-5 text-rose-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-slate-900">အရောင်းဘောင်ချာ Refund ပြုလုပ်ရန်</h3>
-                <p className="text-xs text-slate-500">ဘောင်ချာအမှတ်: <span className="font-bold text-slate-800">{refundModalSale.voucherNo}</span></p>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1.5 text-slate-700">
-              <div className="flex justify-between">
-                <span className="text-slate-500">ဝယ်သူအမည်:</span>
-                <span className="font-bold">{refundModalSale.customerName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">ရောင်းရငွေ:</span>
-                <span className="font-bold text-rose-600">{(refundModalSale.grandTotal || 0).toLocaleString()} ကျပ်</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">ပစ္စည်းများ:</span>
-                <span className="font-semibold text-right max-w-[200px] truncate">
-                  {refundModalSale.items.map((i) => i.productName).join(', ')}
-                </span>
-              </div>
-            </div>
-
-            <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-xs text-amber-800 space-y-1">
-              <p className="font-bold">⚠️ Refund ပြုလုပ်ပါက အောက်ပါအတိုင်း ဖြစ်ပါမည်:</p>
-              <p>• ဤအရောင်းဘောင်ချာကို "ပယ်ဖျက်ပြီး (Refunded)" အဖြစ် ပြောင်းလဲပါမည်။</p>
-              <p>• ရောင်းချခဲ့သော ကုန်ပစ္စည်းများသည် <strong>စတော့ကျန် စာရင်းထဲသို့ အလိုအလျောက် ပြန်လည်ဝင်ရောက် သွားပါမည်</strong>။</p>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Refund ပြုလုပ်ရသည့် အကြောင်းအရင်း (မှတ်ချက်):
-              </label>
-              <input
-                type="text"
-                value={refundReason}
-                onChange={(e) => setRefundReason(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-rose-500"
-                placeholder="ဥပမာ- မှားယွင်းရောင်းချမိခြင်း / ပစ္စည်းပြန်အမ်းခြင်း..."
-              />
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setRefundModalSale(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-              >
-                မပြုလုပ်ပါ (Cancel)
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (onRefundSale) {
-                    onRefundSale(refundModalSale.id, refundReason);
-                  }
-                  setRefundModalSale(null);
-                }}
-                className="px-5 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>အတည်ပြုမည် (Confirm Refund)</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Modal */}
-      {deleteModalSale && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-sm w-full p-6 space-y-4">
-            <div className="flex items-center gap-3 text-rose-600 border-b pb-3 border-slate-100">
-              <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center font-bold">
-                <Trash2 className="w-5 h-5 text-rose-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-slate-900">အရောင်းမှတ်တမ်း ဖျက်ရန်</h3>
-                <p className="text-xs text-slate-500">ဘောင်ချာ: {deleteModalSale.voucherNo}</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed">
-              ဤအရောင်းမှတ်တမ်းကို စနစ်ထဲမှ လုံးဝ ဖျက်ပစ်ရန် သေချာပါသလား?
-            </p>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => setDeleteModalSale(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
-              >
-                မဖျက်ပါ
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (onDeleteSale) {
-                    onDeleteSale(deleteModalSale.id);
-                  }
-                  setDeleteModalSale(null);
-                }}
-                className="px-5 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition-all shadow-sm cursor-pointer"
-              >
-                ဖျက်မည် (Delete)
-              </button>
-            </div>
-          </div>
-        </div>
+        </>
       )}
     </div>
   );

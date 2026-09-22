@@ -116,7 +116,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           email: cleanEmail,
           fullName: cleanEmail.split('@')[0],
         };
-        setSuccess('စနစ်ထဲသို့ ဝင်ရောက်နေပါသည်...');
+        try {
+          localStorage.setItem(`cs_pos_v5_pw_${encodedEmail}`, password);
+        } catch {
+          // ignore
+        }
+        setSuccess('ဝင်ရောက်နေသည်...');
         setTimeout(() => {
           onLoginSuccess(loggedUser);
         }, 1000);
@@ -327,13 +332,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
         {/* Brand Bottom Info */}
         <div className="flex items-center justify-center gap-1.5 mt-4 pt-3 border-t border-[#CEEAD6]/50">
-          <span className="text-[#0D5C1E]">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-              <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 20.5c.39.39 1.02.39 1.41 0l2.89-2.89C10.05 18.37 11.01 18.5 12 18.5c4.97 0 9-4.03 9-9h-2c0 3.86-3.14 7-7 7s-7-3.14-7-7 3.14-7 7-7 7 3.14 7 7c0 .54-.06 1.07-.18 1.58l1.86.62c.2-.72.32-1.47.32-2.2 0-4.97-4.03-9-9-9zM12 10.5c.83 0 1.5-.67 1.5-1.5S12.83 7.5 12 7.5s-1.5.67-1.5 1.5.67 1.5 1.5 1.5z" />
-            </svg>
-          </span>
-          <span className="font-extrabold text-[#0D5C1E] text-base tracking-wide font-sans italic">
-            TCO Fresh
+          <span className="font-semibold text-[#0D5C1E] text-xs sm:text-sm tracking-wide font-sans">
+            ©2026.Created by PG
           </span>
         </div>
       </div>

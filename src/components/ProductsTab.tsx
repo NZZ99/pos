@@ -7,6 +7,7 @@ interface ProductsTabProps {
   onAddProduct: (product: Omit<Product, 'id'>) => void;
   onUpdateProduct: (product: Product) => void;
   onDeleteProduct: (id: string) => void;
+  onRequestPinAuth?: (title: string, description: string, onSuccess: () => void) => void;
 }
 
 export const ProductsTab: React.FC<ProductsTabProps> = ({
@@ -14,6 +15,7 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
+  onRequestPinAuth,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -201,7 +203,17 @@ export const ProductsTab: React.FC<ProductsTabProps> = ({
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         <button
-                          onClick={() => handleOpenEditModal(p)}
+                          onClick={() => {
+                            if (onRequestPinAuth) {
+                              onRequestPinAuth(
+                                'ကုန်ပစ္စည်း ပြင်ဆင်ရန်',
+                                'ကုန်ပစ္စည်း အချက်အလက် ပြင်ဆင်ရန် Setting ထဲရှိ Security PIN (ဂဏန်း ၆ လုံး) ကို ထည့်သွင်းပေးပါ။',
+                                () => handleOpenEditModal(p)
+                              );
+                            } else {
+                              handleOpenEditModal(p);
+                            }
+                          }}
                           className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
                           title="ပြင်ဆင်မည်"
                         >

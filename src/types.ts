@@ -37,6 +37,7 @@ export interface SaleRecord {
   time: string; // HH:mm
   customerName: string; // ဝယ်သူအမည်
   customerPhone?: string;
+  customerArea?: string; // နယ်မြေ / ဧရိယာ (Area name)
   saleType: 'Retail' | 'Wholesale'; // အမျိုးအစား
   items: SaleItem[];
   totalQty: number;
@@ -67,6 +68,7 @@ export interface TabLabels {
   products: string;
   stockIn: string;
   inventory: string;
+  waste?: string;
   reports: string;
   settings: string;
 }

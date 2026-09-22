@@ -47,7 +47,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [newPin, setNewPin] = useState('');
 
   useEffect(() => {
-    const savedPin = shopInfo.settingsPin;
+    const savedPin = shopInfo.settingsPin || '123456';
     if (savedPin) {
       setPinLock(savedPin);
       setNewPin(savedPin);

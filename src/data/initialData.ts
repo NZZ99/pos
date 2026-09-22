@@ -6,6 +6,7 @@ export const initialShopInfo: ShopInfo = {
   address: "အမှတ် (၁၂)၊ ဘိုချုပ်လမ်း၊ တောင်ကြီးမြို့။",
   phone: "09-123456789, 09-987654321",
   voucherNote: "ဝယ်ယူအားပေးမှုကို အထူးကျေးဇူးတင်ရှိပါသည်။ (ဝယ်ယူပြီးပစ္စည်း ပြန်မလဲပါ။)",
+  settingsPin: "123456",
 };
 
 export const initialProducts: Product[] = [

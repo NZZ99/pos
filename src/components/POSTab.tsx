@@ -12,6 +12,7 @@ import {
   Search,
   Printer,
   Sparkles,
+  MapPin,
 } from 'lucide-react';
 
 interface POSTabProps {
@@ -39,6 +40,7 @@ export const POSTab: React.FC<POSTabProps> = ({
 
   // Customer & Payment state
   const [customerName, setCustomerName] = useState('');
+  const [customerArea, setCustomerArea] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'KPay' | 'Wave' | 'Credit'>('Cash');
   const [discount, setDiscount] = useState<number | ''>('');
   const [cashReceived, setCashReceived] = useState<number | ''>('');
@@ -185,6 +187,7 @@ export const POSTab: React.FC<POSTabProps> = ({
       date: todayStr,
       time: timeStr,
       customerName: customerName.trim() || 'အထွေထွေဝယ်သူ',
+      customerArea: customerArea.trim() || undefined,
       saleType,
       items: cart.map(({ id, ...rest }) => rest),
       totalQty,
@@ -203,6 +206,7 @@ export const POSTab: React.FC<POSTabProps> = ({
     // Reset Form
     setCart([]);
     setCustomerName('');
+    setCustomerArea('');
     setDiscount('');
     setCashReceived('');
     setNotes('');
@@ -432,6 +436,21 @@ export const POSTab: React.FC<POSTabProps> = ({
                   placeholder="ဥပမာ - ဦးမောင်မောင် / ဒေါ်လှလှ (ဆိုင်)"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              {/* Area Name Box */}
+              <div>
+                <label className="block font-medium text-slate-700 mb-1 flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <span>နယ်မြေ / ဧရိယာ (Area Name)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="ဥပမာ - မြောက်ဥက္ကလာ၊ လှိုင်သာယာ၊ တောင်ဒဂုံ"
+                  value={customerArea}
+                  onChange={(e) => setCustomerArea(e.target.value)}
                   className="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:border-indigo-500"
                 />
               </div>

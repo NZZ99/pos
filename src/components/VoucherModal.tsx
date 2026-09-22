@@ -129,49 +129,54 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                 </div>
 
                 {/* Invoice Info */}
-                <div className={`flex justify-between ${printSize === 'A6' ? 'mb-4' : 'mb-10'} items-end`}>
-                   <div className="space-y-1.5">
-                      <h3 className="font-bold text-slate-700 mb-2">Invoice to:</h3>
-                      <p className={`font-bold text-[#333B4F] ${printSize === 'A6' ? 'text-sm' : 'text-lg'}`}>{sale.customerName || 'Customer'}</p>
+                <div className={`flex justify-between ${printSize === 'A6' ? 'mb-4' : 'mb-8'} items-end`}>
+                   <div className="space-y-1">
+                      <h3 className="font-bold text-slate-700 text-xs sm:text-sm">ဝယ်သူအမည် (Customer):</h3>
+                      <p className={`font-bold text-[#333B4F] ${printSize === 'A6' ? 'text-sm' : 'text-lg'}`}>{sale.customerName || 'အထွေထွေဝယ်သူ'}</p>
+                      {sale.customerArea && (
+                        <p className={`text-slate-600 font-medium ${printSize === 'A6' ? 'text-[11px]' : 'text-sm'}`}>
+                          <span className="font-semibold text-slate-500">နယ်မြေ/ဧရိယာ (Area):</span> {sale.customerArea}
+                        </p>
+                      )}
                    </div>
-                   <div className={`grid grid-cols-2 ${printSize === 'A6' ? 'gap-x-2 gap-y-1 text-sm' : 'gap-x-8 gap-y-3 text-base'}`}>
-                      <span className="font-bold text-slate-700 text-right">Invoice -</span>
+                   <div className={`grid grid-cols-2 ${printSize === 'A6' ? 'gap-x-2 gap-y-1 text-xs' : 'gap-x-8 gap-y-2 text-sm'}`}>
+                      <span className="font-bold text-slate-700 text-right">ဘောင်ချာနံပါတ်:</span>
                       <span className="font-bold text-[#333B4F]">{sale.voucherNo}</span>
-                      <span className="font-bold text-slate-700 text-right">Date</span>
-                      <span className="font-bold text-[#333B4F]">{sale.date}</span>
+                      <span className="font-bold text-slate-700 text-right">ရက်စွဲ:</span>
+                      <span className="font-bold text-[#333B4F]">{sale.date} {sale.time ? `(${sale.time})` : ''}</span>
                    </div>
                 </div>
 
                 {/* Table */}
-                <div className="flex-1 mb-8 flex flex-col">
-                   <table className={`w-full border-collapse border border-[#333B4F] ${printSize === 'A6' ? 'text-xs' : 'text-base'}`}>
+                <div className="flex-1 mb-6 flex flex-col">
+                   <table className={`w-full border-collapse border border-[#333B4F] ${printSize === 'A6' ? 'text-xs' : 'text-sm'}`}>
                       <thead>
                          <tr className="bg-[#333B4F] text-white">
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-6' : 'py-2.5 px-3 w-12'} text-left font-semibold border-r border-[#333B4F]`}>No</th>
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-left font-semibold border-r border-[#333B4F]`}>Item Description</th>
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-10' : 'py-2.5 px-3 w-20'} text-center font-semibold border-r border-[#333B4F]`}>Qty</th>
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-16' : 'py-2.5 px-3 w-32'} text-center font-semibold border-r border-[#333B4F]`}>Price</th>
-                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-16' : 'py-2.5 px-3 w-32'} text-center font-semibold`}>Total</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-6' : 'py-2 px-2 w-10'} text-center font-semibold border-r border-[#333B4F]`}>စဉ်</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} text-left font-semibold border-r border-[#333B4F]`}>ကုန်ပစ္စည်းအမည် / အမျိုးအမည်</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-10' : 'py-2 px-2 w-16'} text-center font-semibold border-r border-[#333B4F]`}>အရေအတွက်</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-16' : 'py-2 px-3 w-28'} text-right font-semibold border-r border-[#333B4F]`}>နှုန်းထား (ကျပ်)</th>
+                           <th className={`${printSize === 'A6' ? 'py-1 px-1.5 w-16' : 'py-2 px-3 w-28'} text-right font-semibold`}>ကျသင့်ငွေ (ကျပ်)</th>
                          </tr>
                       </thead>
                       <tbody>
                          {sale.items.map((item, idx) => (
                            <tr key={idx} className="border-b border-[#333B4F]">
-                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} border-r border-[#333B4F] text-[#333B4F] font-medium text-center`}>{idx + 1}</td>
-                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} border-r border-[#333B4F] text-[#333B4F]`}>{item.productName}</td>
-                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-center border-r border-[#333B4F] text-[#333B4F]`}>{item.quantity ?? (item as any).weightKg ?? 1}</td>
-                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-right border-r border-[#333B4F] text-[#333B4F]`}>{(item.unitPrice ?? (item as any).pricePerKg ?? 0).toLocaleString()}</td>
-                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2.5 px-3'} text-right text-[#333B4F] font-medium`}>{(item.totalAmount ?? 0).toLocaleString()}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-2'} border-r border-[#333B4F] text-[#333B4F] font-medium text-center`}>{idx + 1}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} border-r border-[#333B4F] text-[#333B4F]`}>{item.productName}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-2'} text-center border-r border-[#333B4F] text-[#333B4F]`}>{item.quantity ?? (item as any).weightKg ?? 1}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} text-right border-r border-[#333B4F] text-[#333B4F]`}>{(item.unitPrice ?? (item as any).pricePerKg ?? 0).toLocaleString()}</td>
+                              <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} text-right text-[#333B4F] font-medium`}>{(item.totalAmount ?? 0).toLocaleString()}</td>
                            </tr>
                          ))}
                          {/* Fill empty rows to make it look like a full page invoice */}
-                         {printSize !== 'A6' && [...Array(Math.max(1, 12 - sale.items.length))].map((_, i) => (
+                         {printSize !== 'A6' && [...Array(Math.max(1, 10 - sale.items.length))].map((_, i) => (
                            <tr key={`empty-${i}`} className="border-b border-[#333B4F]">
-                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'} border-r border-[#333B4F]`}></td>
-                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'} border-r border-[#333B4F]`}></td>
-                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'} border-r border-[#333B4F]`}></td>
-                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'} border-r border-[#333B4F]`}></td>
-                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-4 px-3'}`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-3 px-2'} border-r border-[#333B4F]`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-3 px-3'} border-r border-[#333B4F]`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-3 px-2'} border-r border-[#333B4F]`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-3 px-3'} border-r border-[#333B4F]`}></td>
+                             <td className={`${printSize === 'A6' ? 'py-1 px-1.5' : 'py-3 px-3'}`}></td>
                            </tr>
                          ))}
                       </tbody>
@@ -179,45 +184,45 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                    
                    <div className="flex w-full">
                       {/* Left: Payment Info */}
-                      <div className={`${printSize === 'A6' ? 'flex-1 pt-2 pr-2' : 'flex-1 pt-6 pr-4'}`}>
-                        <p className={`font-bold text-slate-800 mb-2 ${printSize === 'A6' ? 'text-sm' : 'text-base'}`}>Payment Info:</p>
-                        <div className={`text-slate-600 space-y-1 ${printSize === 'A6' ? 'text-xs' : 'text-sm'}`}>
-                          <p>Method: {sale.paymentMethod}</p>
-                          <p>Cash Received: {(sale.cashReceived ?? 0).toLocaleString()}</p>
-                          {sale.changeAmount !== undefined && <p>Change: {(sale.changeAmount ?? 0).toLocaleString()}</p>}
-                          {sale.notes && <p className="mt-2 text-[#333B4F]"><span className="font-bold">Notes:</span> {sale.notes}</p>}
+                      <div className={`${printSize === 'A6' ? 'flex-1 pt-2 pr-2' : 'flex-1 pt-5 pr-4'}`}>
+                        <p className={`font-bold text-slate-800 mb-1.5 ${printSize === 'A6' ? 'text-xs' : 'text-sm'}`}>ငွေပေးချေမှု အချက်အလက်:</p>
+                        <div className={`text-slate-600 space-y-1 ${printSize === 'A6' ? 'text-[11px]' : 'text-xs sm:text-sm'}`}>
+                          <p><span className="font-semibold text-slate-700">ငွေရှင်းပုံစံ:</span> {sale.paymentMethod === 'Cash' ? 'ငွေသား (Cash)' : sale.paymentMethod === 'Credit' ? 'အကြွေး (Credit)' : sale.paymentMethod} ({sale.saleType === 'Wholesale' ? 'လက်ကား' : 'လက်လီ'})</p>
+                          <p><span className="font-semibold text-slate-700">လက်ခံရရှိငွေ:</span> {(sale.cashReceived ?? sale.grandTotal ?? 0).toLocaleString()} ကျပ်</p>
+                          {sale.changeAmount !== undefined && sale.changeAmount > 0 && <p><span className="font-semibold text-slate-700">ပြန်အမ်းငွေ:</span> {(sale.changeAmount ?? 0).toLocaleString()} ကျပ်</p>}
+                          {sale.notes && <p className="mt-1.5 text-[#333B4F]"><span className="font-bold">မှတ်ချက်:</span> {sale.notes}</p>}
                         </div>
                       </div>
                       
                       {/* Right: Totals Grid */}
-                      <div className="w-[16rem] flex flex-col">
+                      <div className="w-[17rem] flex flex-col">
                         <div className="flex border-b border-x border-[#333B4F]">
-                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} font-semibold flex items-center border-b border-[#4A6568]`}>Sub Total</div>
-                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} text-right font-medium text-[#333B4F] flex items-center justify-end`}>{(sale.subtotal ?? 0).toLocaleString()}</div>
+                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5 text-xs' : 'py-2 px-3 text-xs sm:text-sm'} font-semibold flex items-center border-b border-[#4A6568]`}>ကျသင့်ငွေ စုစုပေါင်း</div>
+                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5 text-xs' : 'py-2 px-3 text-xs sm:text-sm'} text-right font-medium text-[#333B4F] flex items-center justify-end`}>{(sale.subtotal ?? 0).toLocaleString()} ကျပ်</div>
                         </div>
                         <div className="flex border-b border-x border-[#333B4F]">
-                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} font-semibold flex items-center border-b border-[#4A6568]`}>Discount</div>
-                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5' : 'py-2 px-3'} text-right font-medium text-[#333B4F] flex items-center justify-end`}>{(sale.discount ?? 0).toLocaleString()}</div>
+                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5 text-xs' : 'py-2 px-3 text-xs sm:text-sm'} font-semibold flex items-center border-b border-[#4A6568]`}>လျှော့ဈေး (Discount)</div>
+                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5 text-xs' : 'py-2 px-3 text-xs sm:text-sm'} text-right font-medium text-[#333B4F] flex items-center justify-end`}>- {(sale.discount ?? 0).toLocaleString()} ကျပ်</div>
                         </div>
                         <div className="flex border-b border-x border-[#333B4F]">
-                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5 text-base' : 'py-3 px-3 text-lg'} font-bold flex items-center tracking-wider`}>TOTAL</div>
-                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5 text-base' : 'py-3 px-3 text-lg'} text-right font-bold text-[#333B4F] flex items-center justify-end`}>{(sale.grandTotal ?? 0).toLocaleString()}</div>
+                          <div className={`w-1/2 bg-[#333B4F] text-white ${printSize === 'A6' ? 'py-1 px-1.5 text-xs' : 'py-2.5 px-3 text-sm sm:text-base'} font-bold flex items-center tracking-wider`}>အသားတင် ကျသင့်ငွေ</div>
+                          <div className={`w-1/2 ${printSize === 'A6' ? 'py-1 px-1.5 text-xs' : 'py-2.5 px-3 text-sm sm:text-base'} text-right font-bold text-[#333B4F] flex items-center justify-end`}>{(sale.grandTotal ?? 0).toLocaleString()} ကျပ်</div>
                         </div>
                       </div>
                    </div>
                 </div>
 
                 {/* Footer Info */}
-                <div className="mt-auto pt-8 flex justify-center w-full z-10 pb-4">
-                  <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-xs text-[#333B4F]">
-                     <div className="flex items-center gap-2.5"><Phone className="w-3.5 h-3.5"/> <span className="font-medium">{shopInfo.phone || 'Phone Number'}</span></div>
-                     <div className="flex items-start gap-2.5"><MapPin className="w-3.5 h-3.5 mt-0.5"/> <span className="font-medium max-w-[180px] whitespace-normal">{shopInfo.address || 'Store Address'}</span></div>
+                <div className="mt-auto pt-6 flex justify-center w-full z-10 pb-2">
+                  <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-xs text-[#333B4F]">
+                     <div className="flex items-center gap-2"><Phone className="w-3.5 h-3.5"/> <span className="font-medium">{shopInfo.phone || 'ဖုန်းနံပါတ်'}</span></div>
+                     <div className="flex items-start gap-2"><MapPin className="w-3.5 h-3.5 mt-0.5"/> <span className="font-medium max-w-[220px] whitespace-normal">{shopInfo.address || 'ဆိုင်လိပ်စာ'}</span></div>
                   </div>
                 </div>
               </div>
             </div>
-            </div>
-          ) : (
+          </div>
+        ) : (
             <div
               className="bg-white text-slate-900 shadow-md border border-slate-200 p-4 print:p-0 print:border-none print:shadow-none transition-all w-[320px] print:w-full print:max-w-full font-sans text-xs print:text-[11px] leading-normal mx-auto"
               id="voucher-printable-area"
@@ -258,10 +263,16 @@ export const VoucherModal: React.FC<VoucherModalProps> = ({
                   <span className="text-slate-600">ဝယ်သူအမည်:</span>
                   <span className="font-bold text-slate-900">{sale.customerName || 'အထွေထွေ'}</span>
                 </div>
+                {sale.customerArea && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-600">နယ်မြေ/ဧရိယာ:</span>
+                    <span className="font-semibold text-slate-900">{sale.customerArea}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-600">အမျိုးအစား/ငွေရှင်း:</span>
+                  <span className="text-slate-600">အရောင်း/ငွေရှင်း:</span>
                   <span className="font-semibold text-slate-900">
-                    {sale.saleType === 'Wholesale' ? 'လက်ကား' : 'လက်လီ'} / {sale.paymentMethod}
+                    {sale.saleType === 'Wholesale' ? 'လက်ကား' : 'လက်လီ'} / {sale.paymentMethod === 'Cash' ? 'ငွေသား' : sale.paymentMethod === 'Credit' ? 'အကြွေး' : sale.paymentMethod}
                   </span>
                 </div>
               </div>

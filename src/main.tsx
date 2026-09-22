@@ -19,9 +19,61 @@ function RootApp() {
 
     window.addEventListener('error', handleError);
     window.addEventListener('unhandledrejection', handleRejection);
+
+    // Block F12, DevTools shortcuts, Inspect Element, View Source (Ctrl+U)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F12 key
+      if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      // Ctrl+Shift+I or Cmd+Option+I (Inspect)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      // Ctrl+Shift+J or Cmd+Option+J (Console)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      // Ctrl+Shift+C or Cmd+Option+C (Element picker)
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      // Ctrl+U or Cmd+Option+U (View Source)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'u' || e.key === 'U' || e.keyCode === 85)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      // Ctrl+S or Cmd+S (Save Page)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S' || e.keyCode === 83)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    // Block right-click context menu
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      return false;
+    };
+
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    window.addEventListener('contextmenu', handleContextMenu, { capture: true });
+
     return () => {
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleRejection);
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+      window.removeEventListener('contextmenu', handleContextMenu, { capture: true });
     };
   }, []);
 

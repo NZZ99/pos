@@ -241,3 +241,211 @@ export async function exportPOSToExcel(
   document.body.removeChild(anchor);
   window.URL.revokeObjectURL(url);
 }
+
+export interface WasteExportItem {
+  productCode: string;
+  productName: string;
+  date: string;
+  expiryDate: string;
+  qty: number;
+  unit?: string;
+  purchasePrice: number;
+  lossAmount: number;
+  storageLocation?: string;
+  isExpired: boolean;
+  isExpiringSoon?: boolean;
+}
+
+export async function exportWasteToExcel(
+  items: WasteExportItem[],
+  shopInfo: ShopInfo,
+  filename: string = 'Waste_Expiry_Report.xlsx'
+) {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = shopInfo.name || 'အအေးခဲ အသားငါး အရောင်းဆိုင်';
+  workbook.created = new Date();
+
+  const sheet = workbook.addWorksheet('Waste & Expiry စာရင်း', {
+    views: [{ showGridLines: true }],
+  });
+
+  sheet.columns = [
+    { key: 'no', width: 8 },             // Col A - စဉ်
+    { key: 'productCode', width: 18 },    // Col B - ကုန်ပစ္စည်းကုဒ်
+    { key: 'productName', width: 28 },    // Col C - ကုန်ပစ္စည်းအမည်
+    { key: 'date', width: 14 },           // Col D - အဝင်ရက်စွဲ
+    { key: 'expiryDate', width: 16 },     // Col E - သက်တမ်းကုန်ရက်
+    { key: 'qty', width: 14 },            // Col F - အရေအတွက်
+    { key: 'unit', width: 10 },           // Col G - ယူနစ်
+    { key: 'purchasePrice', width: 16 },  // Col H - ဝယ်ဈေး (၁ ခု)
+    { key: 'lossAmount', width: 20 },     // Col I - ဆုံးရှုံးမှုတန်ဖိုး
+    { key: 'storageLocation', width: 18 },// Col J - သိမ်းဆည်းနေရာ
+    { key: 'status', width: 18 },         // Col K - အခြေအနေ
+  ];
+
+  const titleFont: Partial<ExcelJS.Font> = { name: 'Segoe UI', size: 14, bold: true, color: { argb: 'FFFFFF' } };
+  const headerFont: Partial<ExcelJS.Font> = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FFFFFF' } };
+  const borderStyle: Partial<ExcelJS.Borders> = {
+    top: { style: 'thin', color: { argb: 'CBD5E1' } },
+    left: { style: 'thin', color: { argb: 'CBD5E1' } },
+    bottom: { style: 'thin', color: { argb: 'CBD5E1' } },
+    right: { style: 'thin', color: { argb: 'CBD5E1' } },
+  };
+
+  // Row 1-2: Title Banner
+  sheet.mergeCells('A1:K2');
+  const titleCell = sheet.getCell('A1');
+  titleCell.value = `${shopInfo.name || 'အအေးခဲ အသားငါး အရောင်းဆိုင်'} - စွန့်ပစ်/သက်တမ်းလွန် ကုန်ပစ္စည်းများ အစီရင်ခံစာ (Waste Report)`;
+  titleCell.font = titleFont;
+  titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '991B1B' } }; // Rose 800
+  titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+  // Row 3: Subtitle
+  sheet.mergeCells('A3:K3');
+  const subTitleCell = sheet.getCell('A3');
+  const todayStr = new Date().toISOString().split('T')[0];
+  subTitleCell.value = `ထုတ်ယူသည့် ရက်စွဲ: ${todayStr} | ဖုန်း: ${shopInfo.phone || '-'} | စုစုပေါင်း သက်တမ်းကုန်ပစ္စည်း: ${items.length} သုတ်`;
+  subTitleCell.font = { name: 'Segoe UI', size: 10, italic: true, color: { argb: '475569' } };
+  subTitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+  // Summary Row
+  const totalQty = items.reduce((s, i) => s + (i.qty || 0), 0);
+  const totalLoss = items.reduce((s, i) => s + (i.lossAmount || 0), 0);
+
+  sheet.mergeCells('A5:C5');
+  sheet.getCell('A5').value = `စုစုပေါင်း အသုတ်: ${items.length} သုတ်`;
+  sheet.getCell('A5').font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: '991B1B' } };
+
+  sheet.mergeCells('D5:F5');
+  sheet.getCell('D5').value = `စုစုပေါင်း သက်တမ်းလွန် အရေအတွက်: ${totalQty.toLocaleString()}`;
+  sheet.getCell('D5').font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: 'D97706' } };
+
+  sheet.mergeCells('G5:K5');
+  sheet.getCell('G5').value = `စုစုပေါင်း ဆုံးရှုံးမှုတန်ဖိုး: ${totalLoss.toLocaleString()} ကျပ်`;
+  sheet.getCell('G5').font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'DC2626' } };
+
+  // Row 7: Headers
+  const headerRow = sheet.getRow(7);
+  headerRow.height = 26;
+  const headers = [
+    'စဉ်',
+    'ကုန်ပစ္စည်းကုဒ်',
+    'ကုန်ပစ္စည်းအမည်',
+    'အဝင်ရက်စွဲ',
+    'သက်တမ်းကုန်ရက်',
+    'အရေအတွက်',
+    'ယူနစ်',
+    'ဝယ်ဈေး (၁ ခု)',
+    'ဆုံးရှုံးမှုတန်ဖိုး',
+    'သိမ်းဆည်းနေရာ',
+    'အခြေအနေ',
+  ];
+  headers.forEach((h, idx) => {
+    const cell = headerRow.getCell(idx + 1);
+    cell.value = h;
+    cell.font = headerFont;
+    cell.alignment = { vertical: 'middle', horizontal: idx === 2 ? 'left' : (idx === 5 || idx === 7 || idx === 8 ? 'right' : 'center') };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1E293B' } };
+    cell.border = borderStyle;
+  });
+
+  let currentRow = 8;
+  items.forEach((item, index) => {
+    const r = sheet.getRow(currentRow);
+    r.height = 20;
+
+    r.getCell(1).value = index + 1;
+    r.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+    r.getCell(2).value = item.productCode;
+    r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
+    r.getCell(2).font = { bold: true };
+
+    r.getCell(3).value = item.productName;
+    r.getCell(3).alignment = { horizontal: 'left', vertical: 'middle' };
+
+    r.getCell(4).value = item.date;
+    r.getCell(4).alignment = { horizontal: 'center', vertical: 'middle' };
+
+    r.getCell(5).value = item.expiryDate;
+    r.getCell(5).alignment = { horizontal: 'center', vertical: 'middle' };
+    r.getCell(5).font = { bold: true, color: { argb: item.isExpired ? 'DC2626' : 'D97706' } };
+
+    r.getCell(6).value = item.qty;
+    r.getCell(6).numFmt = '#,##0';
+    r.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
+
+    r.getCell(7).value = item.unit || 'ခု';
+    r.getCell(7).alignment = { horizontal: 'center', vertical: 'middle' };
+
+    r.getCell(8).value = item.purchasePrice;
+    r.getCell(8).numFmt = '#,##0';
+    r.getCell(8).alignment = { horizontal: 'right', vertical: 'middle' };
+
+    r.getCell(9).value = item.lossAmount;
+    r.getCell(9).numFmt = '#,##0';
+    r.getCell(9).font = { bold: true, color: { argb: 'DC2626' } };
+    r.getCell(9).alignment = { horizontal: 'right', vertical: 'middle' };
+
+    r.getCell(10).value = item.storageLocation || '-';
+    r.getCell(10).alignment = { horizontal: 'center', vertical: 'middle' };
+
+    r.getCell(11).value = item.isExpired ? 'သက်တမ်းကုန် (Waste)' : '၇ ရက်အတွင်း ကုန်မည်';
+    r.getCell(11).alignment = { horizontal: 'center', vertical: 'middle' };
+    r.getCell(11).font = { bold: true, color: { argb: item.isExpired ? 'DC2626' : 'D97706' } };
+
+    const bg = item.isExpired ? 'FFF1F2' : (index % 2 === 1 ? 'F8FAFC' : 'FFFFFF');
+    for (let c = 1; c <= 11; c++) {
+      const cell = r.getCell(c);
+      cell.border = borderStyle;
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+    }
+
+    currentRow++;
+  });
+
+  // Table AutoFilter
+  sheet.autoFilter = `A7:K${Math.max(7, currentRow - 1)}`;
+
+  // Total Summary row
+  const totalRow = sheet.getRow(currentRow);
+  totalRow.height = 24;
+  totalRow.getCell(1).value = 'စုစုပေါင်း (Total)';
+  totalRow.getCell(1).font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: '991B1B' } };
+  totalRow.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+  totalRow.getCell(6).value = { formula: `=SUBTOTAL(109, F8:F${currentRow - 1})` };
+  totalRow.getCell(6).numFmt = '#,##0';
+  totalRow.getCell(6).font = { bold: true };
+  totalRow.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
+
+  totalRow.getCell(9).value = { formula: `=SUBTOTAL(109, I8:I${currentRow - 1})` };
+  totalRow.getCell(9).numFmt = '#,##0 "ကျပ်"';
+  totalRow.getCell(9).font = { bold: true, color: { argb: 'DC2626' } };
+  totalRow.getCell(9).alignment = { horizontal: 'right', vertical: 'middle' };
+
+  for (let c = 1; c <= 11; c++) {
+    const cell = totalRow.getCell(c);
+    cell.border = {
+      top: { style: 'medium', color: { argb: '991B1B' } },
+      bottom: { style: 'double', color: { argb: '991B1B' } },
+      left: { style: 'thin', color: { argb: 'CBD5E1' } },
+      right: { style: 'thin', color: { argb: 'CBD5E1' } },
+    };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEF2F2' } };
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+
+  const url = window.URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  window.URL.revokeObjectURL(url);
+}
