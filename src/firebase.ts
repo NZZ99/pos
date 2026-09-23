@@ -53,7 +53,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  // Keep local app state intact without crashing or forcing browser reloads
 }
 
 export function sanitizeForFirestore<T>(obj: T): T {

@@ -51,21 +51,37 @@ export const POSTab: React.FC<POSTabProps> = ({
 
   const categories = ['All', 'ကြက်သား', 'ဆတ်သား/အမဲသား', 'ဝက်သား', 'ပင်လယ်စာ', 'ငါး / ပင်လယ်စာ'];
 
-  const getProductStock = (productCode: string) => {
-    const totalIn = stockInList
-      .filter((s) => s.productCode === productCode)
-      .reduce((sum, s) => sum + (s.qty || 0), 0);
+  const getProductStock = (productCode: string, productName?: string) => {
+    const prodObj = products.find((p) => p.code === productCode || (productName && p.name === productName));
+    const targetCode = (productCode || prodObj?.code || '').trim().toLowerCase();
+    const targetName = (productName || prodObj?.name || '').trim().toLowerCase();
 
-    const totalSold = salesList
+    const totalIn = stockInList
+      .filter((s) => {
+        const sCode = (s.productCode || '').trim().toLowerCase();
+        const sName = (s.productName || '').trim().toLowerCase();
+        if (targetCode && sCode && targetCode === sCode) return true;
+        if (targetName && sName && targetName === sName) return true;
+        return false;
+      })
+      .reduce((sum, s) => sum + (Number(s.qty) || 0), 0);
+
+    const totalSold = (salesList || [])
       .filter((sale) => sale.status !== 'Refunded')
       .reduce((sum, sale) => {
-        const itemQty = sale.items
-          .filter((i) => i.productCode === productCode)
-          .reduce((sSum, item) => sSum + (item.quantity || 0), 0);
+        const itemQty = (sale.items || [])
+          .filter((item) => {
+            const iCode = (item.productCode || '').trim().toLowerCase();
+            const iName = (item.productName || '').trim().toLowerCase();
+            if (targetCode && iCode && targetCode === iCode) return true;
+            if (targetName && iName && targetName === iName) return true;
+            return false;
+          })
+          .reduce((sSum, item) => sSum + (Number(item.quantity) || 0), 0);
         return sum + itemQty;
       }, 0);
 
-    return totalIn - totalSold;
+    return Math.max(0, totalIn - totalSold);
   };
 
   const filteredProducts = products.filter((p) => {

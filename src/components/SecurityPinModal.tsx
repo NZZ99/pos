@@ -17,7 +17,7 @@ export const SecurityPinModal: React.FC<SecurityPinModalProps> = ({
   correctPin,
   accountPassword = '',
   title = 'လုံခြုံရေး အတည်ပြုပါ',
-  description = 'ဤလုပ်ဆောင်ချက်ကို ဆက်လက်လုပ်ဆောင်ရန် သင့် Login Password သို့မဟုတ် Security PIN ကို ထည့်သွင်းပေးပါ။',
+  description = 'ဤလုပ်ဆောင်ချက်ကို ဆက်လက်လုပ်ဆောင်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။',
   actionType = 'delete',
   onSuccess,
   onClose,
@@ -51,7 +51,7 @@ export const SecurityPinModal: React.FC<SecurityPinModalProps> = ({
     const trimmed = inputVal.trim();
     if (!trimmed) {
       setError(true);
-      setErrorMessage('Password သို့မဟုတ် PIN ကို အရင်ရိုက်ထည့်ပေးပါ။');
+      setErrorMessage('Security PIN ကို အရင်ရိုက်ထည့်ပေးပါ။');
       inputRef.current?.focus();
       return;
     }
@@ -64,7 +64,7 @@ export const SecurityPinModal: React.FC<SecurityPinModalProps> = ({
       onSuccess();
     } else {
       setError(true);
-      setErrorMessage('Password (သို့မဟုတ် PIN) မှားယွင်းနေပါသည်။ ပြန်လည်စစ်ဆေးပြီး ရိုက်ထည့်ပါ။');
+      setErrorMessage('Security PIN မှားယွင်းနေပါသည်။ ပြန်လည်စစ်ဆေးပြီး ရိုက်ထည့်ပါ။');
       inputRef.current?.focus();
     }
   };
@@ -151,7 +151,7 @@ export const SecurityPinModal: React.FC<SecurityPinModalProps> = ({
                 setError(false);
                 setErrorMessage('');
               }}
-              placeholder="Password (သို့) PIN ရိုက်ထည့်ပါ..."
+              placeholder="Security PIN ရိုက်ထည့်ပါ..."
               className={`w-full pl-10 pr-10 py-2.5 bg-slate-50 border rounded-xl text-sm font-semibold text-slate-800 placeholder:text-slate-400 placeholder:font-normal focus:outline-none transition-all ${
                 error
                   ? 'border-rose-500 bg-rose-50/50 ring-2 ring-rose-500/20'

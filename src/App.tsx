@@ -255,7 +255,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     return () => {
       active = false;
     };
-  }, [encodedEmail, suffix, currentUser]);
+  }, [encodedEmail, suffix]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -335,7 +335,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     const prodName = prod ? ` (${prod.name}) ` : ' ';
     requestPinAuth(
       'ကုန်ပစ္စည်း ဖျက်ရန် အတည်ပြုပါ',
-      `ကုန်ပစ္စည်း${prodName}ကို စနစ်ထဲမှ လုံးဝဖျက်ပစ်ရန် သင့် Login Password သို့မဟုတ် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
+      `ကုန်ပစ္စည်း${prodName}ကို စနစ်ထဲမှ လုံးဝဖျက်ပစ်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
       async () => {
         const nextProds = products.filter((p) => p.id !== id);
         setProducts(nextProds);
@@ -374,7 +374,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     const stkName = stk ? ` (${stk.productName}) ` : ' ';
     requestPinAuth(
       'ပစ္စည်းအဝင် စာရင်းဖျက်ရန် အတည်ပြုပါ',
-      `ပစ္စည်းအဝင် စာရင်း${stkName}ကို စနစ်ထဲမှ လုံးဝဖျက်ရန် သင့် Login Password သို့မဟုတ် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
+      `ပစ္စည်းအဝင် စာရင်း${stkName}ကို စနစ်ထဲမှ လုံးဝဖျက်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
       async () => {
         const nextStock = stockInList.filter((s) => s.id !== id);
         setStockInList(nextStock);
@@ -499,6 +499,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     const nextSales = [sale, ...salesList];
     setSalesList(nextSales);
     localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(nextSales));
+
     try {
       await setDoc(doc(db, 'users', encodedEmail, 'sales', sale.id), sanitizeForFirestore(sale)).catch(err => {
         handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/sales/${sale.id}`);
@@ -514,7 +515,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     const vNo = sale ? ` (ဘောင်ချာ ${sale.voucherNo}) ` : ' ';
     requestPinAuth(
       'အရောင်းမှတ်တမ်း ဖျက်ရန် အတည်ပြုပါ',
-      `အရောင်းမှတ်တမ်း${vNo}ကို စနစ်ထဲမှ လုံးဝဖျက်ရန် သင့် Login Password သို့မဟုတ် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
+      `အရောင်းမှတ်တမ်း${vNo}ကို စနစ်ထဲမှ လုံးဝဖျက်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
       async () => {
         const nextSales = salesList.filter((s) => s.id !== id);
         setSalesList(nextSales);
@@ -537,7 +538,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     const vNo = sale ? ` (ဘောင်ချာ ${sale.voucherNo}) ` : ' ';
     requestPinAuth(
       'အရောင်းဘောင်ချာ ပယ်ဖျက်/Refund ရန် အတည်ပြုပါ',
-      `အရောင်းဘောင်ချာ${vNo}ကို ပယ်ဖျက်/Refund ပြုလုပ်ရန် သင့် Login Password သို့မဟုတ် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
+      `အရောင်းဘောင်ချာ${vNo}ကို ပယ်ဖျက်/Refund ပြုလုပ်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
       async () => {
         const defReason = reason || 'မှားယွင်းရောင်းချမှု ပယ်ဖျက်ခြင်း/Refund ပြုလုပ်ခြင်း';
         const nextSales = salesList.map((s) => {
@@ -552,6 +553,7 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
         });
         setSalesList(nextSales);
         localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(nextSales));
+
         try {
           await updateDoc(doc(db, 'users', encodedEmail, 'sales', id), {
             status: 'Refunded',

@@ -42,41 +42,7 @@ export const initialProducts: Product[] = [
   },
 ];
 
-export const initialStockIn: StockInRecord[] = [
-  {
-    id: "stk-1",
-    date: "2026-07-26",
-    productCode: "P-001",
-    productName: "ထိုင်းကြက်ရင်ပုံသား",
-    qty: 50,
-    purchasePrice: 7500,
-    totalCost: 375000,
-    expiryDate: "2027-01-12",
-    storageLocation: "Freezer A-01",
-  },
-  {
-    id: "stk-2",
-    date: "2026-07-26",
-    productCode: "P-002",
-    productName: "တရုတ်ဆတ်သားတုံး",
-    qty: 30,
-    purchasePrice: 12000,
-    totalCost: 360000,
-    expiryDate: "2027-07-10",
-    storageLocation: "Freezer B-03",
-  },
-  {
-    id: "stk-3",
-    date: "2026-07-26",
-    productCode: "P-003",
-    productName: "အမဲသားစင်းကော",
-    qty: 20,
-    purchasePrice: 15000,
-    totalCost: 300000,
-    expiryDate: "2027-01-13",
-    storageLocation: "Freezer A-02",
-  },
-];
+export const initialStockIn: StockInRecord[] = [];
 
 export const initialSales: SaleRecord[] = [];
 

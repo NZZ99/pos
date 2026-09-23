@@ -18,32 +18,52 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
 
   // Compute product level inventory
   const inventoryData = products.map((p) => {
-    const totalIn = stockInList
-      .filter((s) => s.productCode === p.code)
-      .reduce((sum, s) => sum + (s.qty || 0), 0);
+    const targetCode = (p.code || '').trim().toLowerCase();
+    const targetName = (p.name || '').trim().toLowerCase();
 
-    const totalSold = salesList
+    // Actual Total Stock-In Quantity
+    const totalIn = stockInList
+      .filter((s) => {
+        const sCode = (s.productCode || '').trim().toLowerCase();
+        const sName = (s.productName || '').trim().toLowerCase();
+        if (targetCode && sCode && targetCode === sCode) return true;
+        if (targetName && sName && targetName === sName) return true;
+        return false;
+      })
+      .reduce((sum, s) => sum + (Number(s.qty) || 0), 0);
+
+    // Actual Total Sold Quantity
+    const totalSold = (salesList || [])
       .filter((sale) => sale.status !== 'Refunded')
       .reduce((sum, sale) => {
-        const itemQty = sale.items
-          .filter((i) => i.productCode === p.code)
-          .reduce((sSum, item) => sSum + (item.quantity || 0), 0);
+        const itemQty = (sale.items || [])
+          .filter((i) => {
+            const iCode = (i.productCode || '').trim().toLowerCase();
+            const iName = (i.productName || '').trim().toLowerCase();
+            if (targetCode && iCode && targetCode === iCode) return true;
+            if (targetName && iName && targetName === iName) return true;
+            return false;
+          })
+          .reduce((sSum, item) => sSum + (Number(item.quantity) || 0), 0);
         return sum + itemQty;
       }, 0);
 
-    const currentStock = totalIn - totalSold;
-    const isLow = currentStock <= (p.minStock || 0);
+    // Current Stock = Total In - Total Sold (0 if no stock in or fully sold)
+    const currentStock = Math.max(0, totalIn - totalSold);
+    const isOutOfStock = currentStock === 0;
+    const isLow = currentStock > 0 && currentStock <= (p.minStock || 0);
 
     return {
       product: p,
       totalIn,
       totalSold,
       currentStock,
+      isOutOfStock,
       isLow,
     };
   });
 
-  const lowStockCount = inventoryData.filter((i) => i.isLow).length;
+  const lowStockCount = inventoryData.filter((i) => i.isLow || i.isOutOfStock).length;
 
   // Filtered
   const filteredProducts = inventoryData.filter(
@@ -127,7 +147,13 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                 <tr
                   key={item.product.id}
                   className={`hover:bg-indigo-50/40 transition-colors ${
-                    item.isLow ? 'bg-amber-50/40' : idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'
+                    item.isOutOfStock
+                      ? 'bg-slate-100/70'
+                      : item.isLow
+                      ? 'bg-amber-50/40'
+                      : idx % 2 === 1
+                      ? 'bg-slate-50/60'
+                      : 'bg-white'
                   }`}
                 >
                   <td className="py-3.5 px-4 text-center font-bold text-slate-900 border-r border-slate-200">
@@ -142,14 +168,21 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({
                   <td className="py-3.5 px-4 text-right border-r border-slate-200 text-slate-600">
                     {(item.totalSold ?? 0).toLocaleString()} {item.product.unit || 'ခု'}
                   </td>
-                  <td className="py-3.5 px-4 text-right border-r border-slate-200 font-bold text-base text-indigo-700">
+                  <td className={`py-3.5 px-4 text-right border-r border-slate-200 font-bold text-base ${
+                    item.isOutOfStock ? 'text-slate-400' : 'text-indigo-700'
+                  }`}>
                     {(item.currentStock ?? 0).toLocaleString()} {item.product.unit || 'ခု'}
                   </td>
                   <td className="py-3.5 px-4 text-center border-r border-slate-200 text-slate-500">
                     {item.product.minStock ?? (item.product as any).minStockKg ?? 0} {item.product.unit || 'ခု'}
                   </td>
                   <td className="py-3.5 px-4 text-center">
-                    {item.isLow ? (
+                    {item.isOutOfStock ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-200/80 text-slate-600 font-semibold text-xs border border-slate-300">
+                        <AlertTriangle className="w-3.5 h-3.5 text-slate-500" />
+                        <span>စတော့ကုန်နေသည်</span>
+                      </span>
+                    ) : item.isLow ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-semibold text-xs border border-rose-200">
                         <AlertTriangle className="w-3.5 h-3.5" />
                         <span>စတော့နည်းနေသည်</span>
