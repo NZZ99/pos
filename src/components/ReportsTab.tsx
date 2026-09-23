@@ -64,6 +64,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [productFilter, setProductFilter] = useState<string>('All');
   const [saleTypeFilter, setSaleTypeFilter] = useState<string>('All');
   const [paymentFilter, setPaymentFilter] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -105,8 +106,17 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         sale.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         sale.items.some((i) => i.productName.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      // Sale Type matching
-      const matchesType = saleTypeFilter === 'All' || sale.saleType === saleTypeFilter;
+      // Product & Sale Type matching on items
+      const matchesProductAndType = sale.items.some((i) => {
+        const pMatch =
+          productFilter === 'All' ||
+          (i.productName || '').trim().toLowerCase() === productFilter.trim().toLowerCase();
+        const typeMatch =
+          saleTypeFilter === 'All' ||
+          i.saleType === saleTypeFilter ||
+          (!i.saleType && sale.saleType === saleTypeFilter);
+        return pMatch && typeMatch;
+      });
 
       // Payment method matching
       const matchesPayment = paymentFilter === 'All' || sale.paymentMethod === paymentFilter;
@@ -117,34 +127,80 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         (statusFilter === 'Completed' && sale.status !== 'Refunded') ||
         (statusFilter === 'Refunded' && sale.status === 'Refunded');
 
-      return matchesPeriod && matchesSearch && matchesType && matchesPayment && matchesStatus;
+      return matchesPeriod && matchesSearch && matchesProductAndType && matchesPayment && matchesStatus;
     });
   };
 
   const filteredSales = getFilteredSales();
 
+  // Helper to get matching items for active filters
+  const isAllFilter = productFilter === 'All' && saleTypeFilter === 'All';
+  const getMatchingItems = (items: SaleRecord['items'], saleType?: string) => {
+    return (items || []).filter((i) => {
+      const pMatch =
+        productFilter === 'All' ||
+        (i.productName || '').trim().toLowerCase() === productFilter.trim().toLowerCase();
+      const typeMatch =
+        saleTypeFilter === 'All' ||
+        i.saleType === saleTypeFilter ||
+        (!i.saleType && saleType === saleTypeFilter);
+      return pMatch && typeMatch;
+    });
+  };
+
   // Aggregate Metrics (Only calculate active non-refunded sales)
   const activeSales = filteredSales.filter((s) => s.status !== 'Refunded');
 
-  const totalRevenue = activeSales.reduce((sum, s) => sum + (s.grandTotal || 0), 0);
+  const totalRevenue = activeSales.reduce((sum, s) => {
+    if (isAllFilter) return sum + (s.grandTotal || 0);
+    const itemRev = getMatchingItems(s.items, s.saleType)
+      .reduce((iSum, item) => iSum + (item.totalAmount || ((Number(item.quantity) || 0) * (Number(item.unitPrice) || 0))), 0);
+    return sum + itemRev;
+  }, 0);
+
   const totalQtySold = activeSales.reduce((sum, s) => {
-    if (s.totalQty !== undefined) return sum + s.totalQty;
-    const itemSum = (s.items || []).reduce((iSum, item) => iSum + (item.quantity ?? (item as any).weightKg ?? 0), 0);
+    const items = isAllFilter ? (s.items || []) : getMatchingItems(s.items, s.saleType);
+    const itemSum = items.reduce(
+      (iSum, item) => iSum + (item.quantity ?? (item as any).weightKg ?? 0),
+      0
+    );
     return sum + itemSum;
   }, 0);
+
   const totalVouchers = activeSales.length;
 
   const cashSales = activeSales
     .filter((s) => s.paymentMethod === 'Cash')
-    .reduce((sum, s) => sum + s.grandTotal, 0);
+    .reduce((sum, s) => {
+      if (isAllFilter) return sum + s.grandTotal;
+      return (
+        sum +
+        getMatchingItems(s.items, s.saleType)
+          .reduce((iSum, item) => iSum + (item.totalAmount || ((Number(item.quantity) || 0) * (Number(item.unitPrice) || 0))), 0)
+      );
+    }, 0);
 
   const kpaySales = activeSales
     .filter((s) => s.paymentMethod === 'KPay' || s.paymentMethod === 'Wave')
-    .reduce((sum, s) => sum + s.grandTotal, 0);
+    .reduce((sum, s) => {
+      if (isAllFilter) return sum + s.grandTotal;
+      return (
+        sum +
+        getMatchingItems(s.items, s.saleType)
+          .reduce((iSum, item) => iSum + (item.totalAmount || ((Number(item.quantity) || 0) * (Number(item.unitPrice) || 0))), 0)
+      );
+    }, 0);
 
   const creditSales = activeSales
     .filter((s) => s.paymentMethod === 'Credit')
-    .reduce((sum, s) => sum + s.grandTotal, 0);
+    .reduce((sum, s) => {
+      if (isAllFilter) return sum + s.grandTotal;
+      return (
+        sum +
+        getMatchingItems(s.items, s.saleType)
+          .reduce((iSum, item) => iSum + (item.totalAmount || ((Number(item.quantity) || 0) * (Number(item.unitPrice) || 0))), 0)
+      );
+    }, 0);
 
   if (!isUnlocked && pinLock) {
     return (
@@ -330,7 +386,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
             </div>
 
             {/* Secondary Filter Bar with Start Date & End Date */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-2 border-t border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 pt-2 border-t border-slate-100">
               <div className="relative">
                 <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
                 <input
@@ -342,14 +398,34 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                 />
               </div>
 
+              {/* Product Name Filter Box */}
               <div className="flex items-center gap-1.5">
                 <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
                   အမျိုးအစား:
                 </span>
                 <select
+                  value={productFilter}
+                  onChange={(e) => setProductFilter(e.target.value)}
+                  className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-medium text-slate-700"
+                >
+                  <option value="All">အားလုံး</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.name}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Retail / Wholesale Filter Box (လက်လီ / လက်ကား) */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                  အရောင်းပုံစံ:
+                </span>
+                <select
                   value={saleTypeFilter}
                   onChange={(e) => setSaleTypeFilter(e.target.value)}
-                  className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                  className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-semibold text-slate-700"
                 >
                   <option value="All">အားလုံး</option>
                   <option value="Retail">လက်လီ</option>
@@ -400,26 +476,26 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                   onChange={(e) => setPaymentFilter(e.target.value)}
                   className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
                 >
-              <option value="All">အားလုံး</option>
-              <option value="Cash">Cash</option>
-              <option value="KPay">KPay/Wave</option>
-              <option value="Credit">Credit</option>
-            </select>
-          </div>
+                  <option value="All">အားလုံး</option>
+                  <option value="Cash">Cash</option>
+                  <option value="KPay">KPay/Wave</option>
+                  <option value="Credit">Credit</option>
+                </select>
+              </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">အခြေအနေ:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-semibold text-slate-700"
-            >
-              <option value="All">အားလုံး</option>
-              <option value="Completed">ပြီးစီး</option>
-              <option value="Refunded">Refunded</option>
-            </select>
-          </div>
-        </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-500 font-medium whitespace-nowrap">အခြေအနေ:</span>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-semibold text-slate-700"
+                >
+                  <option value="All">အားလုံး</option>
+                  <option value="Completed">ပြီးစီး</option>
+                  <option value="Refunded">Refunded</option>
+                </select>
+              </div>
+            </div>
       </div>
 
       {/* Summary KPI Cards Grid */}
@@ -519,15 +595,21 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                   </td>
                 </tr>
               ) : (
-                filteredSales.map((sale) =>
-                  sale.items.map((item, itemIdx) => (
+                filteredSales.map((sale) => {
+                  const displayItems = isAllFilter
+                    ? sale.items
+                    : getMatchingItems(sale.items, sale.saleType);
+
+                  if (displayItems.length === 0) return null;
+
+                  return displayItems.map((item, itemIdx) => (
                     <tr
-                      key={`${sale.id}-${itemIdx}`}
+                      key={`${sale.id}-${itemIdx}-${item.productName}`}
                       className="hover:bg-indigo-50/40 transition-colors bg-white"
                     >
                       {itemIdx === 0 ? (
                         <td
-                          rowSpan={sale.items.length}
+                          rowSpan={displayItems.length}
                           className="py-3 px-3 text-center border-r border-slate-200 font-semibold text-indigo-700 align-top"
                         >
                           <div>{sale.voucherNo}</div>
@@ -541,7 +623,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
 
                       {itemIdx === 0 ? (
                         <td
-                          rowSpan={sale.items.length}
+                          rowSpan={displayItems.length}
                           className="py-3 px-3 text-center border-r border-slate-200 text-slate-600 text-xs align-top"
                         >
                           {sale.date}
@@ -550,7 +632,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
 
                       {itemIdx === 0 ? (
                         <td
-                          rowSpan={sale.items.length}
+                          rowSpan={displayItems.length}
                           className="py-3 px-4 border-r border-slate-200 font-medium text-slate-900 align-top"
                         >
                           {sale.customerName}
@@ -587,7 +669,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
 
                       {itemIdx === 0 ? (
                         <td
-                          rowSpan={sale.items.length}
+                          rowSpan={displayItems.length}
                           className="py-3 px-3 text-center border-r border-slate-200 align-top"
                         >
                           <span
@@ -606,7 +688,7 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
 
                       {itemIdx === 0 ? (
                         <td
-                          rowSpan={sale.items.length}
+                          rowSpan={displayItems.length}
                           className="py-3 px-3 text-center align-top border-r border-slate-200"
                         >
                           <div className="flex items-center justify-center gap-1.5">
@@ -664,8 +746,8 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                         </td>
                       ) : null}
                     </tr>
-                  ))
-                )
+                  ));
+                })
               )}
             </tbody>
             <tfoot className="bg-indigo-50/80 font-bold text-slate-900 border-t-2 border-indigo-200 text-xs sm:text-sm">
