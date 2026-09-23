@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SaleRecord, TimePeriodFilter, Product, StockInRecord, ShopInfo } from '../types';
+import { SaleRecord, TimePeriodFilter, Product, StockInRecord, ShopInfo, WasteRecord } from '../types';
 import { WasteTab } from './WasteTab';
 import { SettingsPinLock } from './SettingsPinLock';
 import {
@@ -20,24 +20,30 @@ interface ReportsTabProps {
   salesList: SaleRecord[];
   products?: Product[];
   stockInList?: StockInRecord[];
+  wasteList?: WasteRecord[];
   shopInfo?: ShopInfo;
   accountPassword?: string;
   onOpenVoucher: (sale: SaleRecord) => void;
   onDeleteSale: (id: string) => void;
   onRefundSale?: (id: string, reason?: string) => void;
   onExportExcel?: () => void;
+  onDeleteStockIn?: (id: string) => void;
+  onDeleteWaste?: (id: string) => void;
 }
 
 export const ReportsTab: React.FC<ReportsTabProps> = ({
   salesList,
   products = [],
   stockInList = [],
+  wasteList = [],
   shopInfo,
   accountPassword,
   onOpenVoucher,
   onDeleteSale,
   onRefundSale,
   onExportExcel,
+  onDeleteStockIn,
+  onDeleteWaste,
 }) => {
   const [pinLock, setPinLock] = useState<string | null>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -228,7 +234,10 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
         <WasteTab
           products={products}
           stockInList={stockInList}
+          wasteList={wasteList}
           shopInfo={shopInfo}
+          onDeleteStockIn={onDeleteStockIn}
+          onDeleteWaste={onDeleteWaste}
         />
       ) : (
         <>

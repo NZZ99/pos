@@ -662,12 +662,15 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
             salesList={salesList}
             products={products}
             stockInList={stockInList}
+            wasteList={wasteList}
             shopInfo={shopInfo}
             accountPassword={accountPassword}
             onOpenVoucher={(sale) => setActiveVoucher(sale)}
             onDeleteSale={handleDeleteSale}
             onRefundSale={handleRefundSale}
             onExportExcel={handleExportExcel}
+            onDeleteStockIn={handleDeleteStockIn}
+            onDeleteWaste={handleDeleteWaste}
           />
         )}
 

@@ -31,7 +31,7 @@ export const WasteTab: React.FC<WasteTabProps> = ({
   onDeleteWaste,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'manual' | 'expired'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'manual' | 'expired' | 'expiring_soon'>('all');
 
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
@@ -77,7 +77,41 @@ export const WasteTab: React.FC<WasteTabProps> = ({
       };
     });
 
-  // 2. Process manual waste entries
+  // 2. Process records expiring within 3 days
+  const expiringSoonBatches = stockInList
+    .filter((s) => {
+      if (!s.expiryDate || (s.qty || 0) <= 0) return false;
+      const days = getDaysDifference(s.expiryDate);
+      return days >= 1 && days <= 3;
+    })
+    .map((s) => {
+      const daysDiff = getDaysDifference(s.expiryDate);
+      const lossAmount = (s.qty || 0) * (s.purchasePrice || 0);
+
+      const matchedProduct = products.find((p) => p.code === s.productCode);
+      const unit = matchedProduct?.unit || 'ခု';
+
+      return {
+        id: s.id,
+        sourceType: 'ExpiringSoon' as const,
+        date: s.date,
+        productCode: s.productCode,
+        productName: s.productName,
+        qty: s.qty || 0,
+        purchasePrice: s.purchasePrice || 0,
+        lossAmount,
+        expiryDate: s.expiryDate,
+        storageLocation: s.storageLocation || '-',
+        reason: `နောက် ${daysDiff} ရက်အတွင်း သက်တမ်းကုန်မည်`,
+        daysDiff,
+        isExpired: false,
+        isToday: false,
+        isExpiringSoon: true,
+        unit,
+      };
+    });
+
+  // 3. Process manual waste entries
   const manualWasteEntries = wasteList.map((w) => {
     const matchedProduct = products.find((p) => p.code === w.productCode);
     const unit = matchedProduct?.unit || 'ခု';
@@ -102,17 +136,21 @@ export const WasteTab: React.FC<WasteTabProps> = ({
   });
 
   // Combined records for display - ONLY Manual Waste and Expired batches
-  const combinedList = [
+  const allWasteList = [
     ...manualWasteEntries,
     ...expiredBatches,
   ];
 
-  const filteredDisplayList = combinedList
-    .filter((item) => {
-      if (filterType === 'manual') return item.sourceType === 'ManualWaste';
-      if (filterType === 'expired') return item.sourceType === 'StockInExpiry';
-      return true;
-    })
+  const currentFilteredList = 
+    filterType === 'manual'
+      ? manualWasteEntries
+      : filterType === 'expired'
+      ? expiredBatches
+      : filterType === 'expiring_soon'
+      ? expiringSoonBatches
+      : allWasteList;
+
+  const filteredDisplayList = currentFilteredList
     .filter((item) => {
       const q = searchTerm.toLowerCase();
       return (
@@ -130,6 +168,10 @@ export const WasteTab: React.FC<WasteTabProps> = ({
   const totalExpiredCount = expiredBatches.length;
   const totalExpiredQty = expiredBatches.reduce((sum, b) => sum + b.qty, 0);
   const totalExpiredLoss = expiredBatches.reduce((sum, b) => sum + b.lossAmount, 0);
+
+  const totalExpiringSoonCount = expiringSoonBatches.length;
+  const totalExpiringSoonQty = expiringSoonBatches.reduce((sum, b) => sum + b.qty, 0);
+  const totalExpiringSoonLoss = expiringSoonBatches.reduce((sum, b) => sum + b.lossAmount, 0);
 
   const grandTotalLossValue = totalManualLoss + totalExpiredLoss;
   const grandTotalWasteQty = totalManualQty + totalExpiredQty;
@@ -232,7 +274,7 @@ export const WasteTab: React.FC<WasteTabProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              စာရင်းအားလုံး ({combinedList.length})
+              စာရင်းအားလုံး ({allWasteList.length})
             </button>
             <button
               onClick={() => setFilterType('manual')}
@@ -253,6 +295,16 @@ export const WasteTab: React.FC<WasteTabProps> = ({
               }`}
             >
               သက်တမ်းကုန်လွန် ({totalExpiredCount})
+            </button>
+            <button
+              onClick={() => setFilterType('expiring_soon')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                filterType === 'expiring_soon'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              ⚠️ ၃ ရက်အတွင်း သက်တမ်းကုန်မည့် ({totalExpiringSoonCount})
             </button>
           </div>
 
@@ -306,6 +358,8 @@ export const WasteTab: React.FC<WasteTabProps> = ({
                     className={`hover:bg-slate-50/80 transition-colors ${
                       item.sourceType === 'ManualWaste'
                         ? 'bg-rose-50/25'
+                        : item.sourceType === 'ExpiringSoon'
+                        ? 'bg-amber-50/40'
                         : 'bg-rose-50/45'
                     }`}
                   >
@@ -338,6 +392,11 @@ export const WasteTab: React.FC<WasteTabProps> = ({
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-100/90 px-2 py-0.5 rounded-md">
                           <UserCheck className="w-3 h-3 text-rose-600" />
                           <span>လူကိုယ်တိုင် Waste</span>
+                        </span>
+                      ) : item.sourceType === 'ExpiringSoon' ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-md">
+                          <Clock className="w-3 h-3 text-amber-600" />
+                          <span>၃ ရက်အတွင်း ကုန်မည် ({item.expiryDate})</span>
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md">
