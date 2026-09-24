@@ -111,29 +111,31 @@ export const WasteTab: React.FC<WasteTabProps> = ({
       };
     });
 
-  // 3. Process manual waste entries
-  const manualWasteEntries = wasteList.map((w) => {
-    const matchedProduct = products.find((p) => p.code === w.productCode);
-    const unit = matchedProduct?.unit || 'ခု';
-    return {
-      id: w.id,
-      sourceType: 'ManualWaste' as const,
-      date: w.date,
-      productCode: w.productCode,
-      productName: w.productName,
-      qty: w.qty,
-      purchasePrice: w.purchasePrice,
-      lossAmount: w.lossAmount,
-      expiryDate: '-',
-      storageLocation: '-',
-      reason: w.reason || 'လူကြောင့် ပျက်စီး/အလေအလွင့်ဖြစ်ခြင်း',
-      daysDiff: 0,
-      isExpired: false,
-      isToday: false,
-      isExpiringSoon: false,
-      unit,
-    };
-  });
+  // 3. Process manual waste entries (exclude deleted)
+  const manualWasteEntries = wasteList
+    .filter((w) => !w.isDeleted)
+    .map((w) => {
+      const matchedProduct = products.find((p) => p.code === w.productCode);
+      const unit = matchedProduct?.unit || 'ခု';
+      return {
+        id: w.id,
+        sourceType: 'ManualWaste' as const,
+        date: w.date,
+        productCode: w.productCode,
+        productName: w.productName,
+        qty: w.qty,
+        purchasePrice: w.purchasePrice,
+        lossAmount: w.lossAmount,
+        expiryDate: '-',
+        storageLocation: '-',
+        reason: w.reason || 'လူကြောင့် ပျက်စီး/အလေအလွင့်ဖြစ်ခြင်း',
+        daysDiff: 0,
+        isExpired: false,
+        isToday: false,
+        isExpiringSoon: false,
+        unit,
+      };
+    });
 
   // Combined records for display - ONLY Manual Waste and Expired batches
   const allWasteList = [
@@ -405,17 +407,18 @@ export const WasteTab: React.FC<WasteTabProps> = ({
                         </span>
                       )}
                     </td>
-                    <td className="py-3 px-2 text-center">
-                      {item.sourceType === 'ManualWaste' && onDeleteWaste ? (
+                    <td className="py-3 px-2 text-center text-slate-400 text-xs">
+                      {onDeleteWaste ? (
                         <button
+                          type="button"
                           onClick={() => onDeleteWaste(item.id)}
-                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
-                          title="Waste စာရင်း ဖျက်မည်"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Waste စာရင်းမှ ဖျက်မည်"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       ) : (
-                        <span className="text-slate-300">-</span>
+                        '-'
                       )}
                     </td>
                   </tr>

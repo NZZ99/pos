@@ -48,8 +48,11 @@ export interface SaleRecord {
   cashReceived?: number;
   changeAmount?: number;
   notes?: string;
-  status?: 'Completed' | 'Refunded';
+  status?: 'Completed' | 'Refunded' | 'Cancelled';
   refundReason?: string;
+  refundedAt?: string;
+  deletedAt?: string;
+  deleteReason?: string;
 }
 
 export type TimePeriodFilter = 'today' | 'weekly' | 'monthly' | 'custom';
@@ -74,6 +77,8 @@ export interface WasteRecord {
   date: string; // YYYY-MM-DD
   reason?: string;
   type?: 'Manual' | 'Expired';
+  isDeleted?: boolean;
+  deletedAt?: string;
 }
 
 export interface TabLabels {

@@ -331,26 +331,17 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
   };
 
   const handleDeleteProduct = async (id: string) => {
-    const prod = products.find((p) => p.id === id);
-    const prodName = prod ? ` (${prod.name}) ` : ' ';
-    requestPinAuth(
-      'ကုန်ပစ္စည်း ဖျက်ရန် အတည်ပြုပါ',
-      `ကုန်ပစ္စည်း${prodName}ကို စနစ်ထဲမှ လုံးဝဖျက်ပစ်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
-      async () => {
-        const nextProds = products.filter((p) => p.id !== id);
-        setProducts(nextProds);
-        localStorage.setItem(`cs_pos_v5_products${suffix}`, JSON.stringify(nextProds));
-        try {
-          await deleteDoc(doc(db, 'users', encodedEmail, 'products', id)).catch(err => {
-            handleFirestoreError(err, OperationType.DELETE, `users/${encodedEmail}/products/${id}`);
-          });
-          showToast('ကုန်ပစ္စည်း ဖျက်ပြီးပါပြီ။');
-        } catch (err) {
-          console.error(err);
-        }
-      },
-      'delete'
-    );
+    const nextProds = products.filter((p) => p.id !== id);
+    setProducts(nextProds);
+    localStorage.setItem(`cs_pos_v5_products${suffix}`, JSON.stringify(nextProds));
+    try {
+      await deleteDoc(doc(db, 'users', encodedEmail, 'products', id)).catch(err => {
+        handleFirestoreError(err, OperationType.DELETE, `users/${encodedEmail}/products/${id}`);
+      });
+      showToast('ကုန်ပစ္စည်း ဖျက်ပြီးပါပြီ။');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Stock In handlers
@@ -370,26 +361,17 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
   };
 
   const handleDeleteStockIn = async (id: string) => {
-    const stk = stockInList.find((s) => s.id === id);
-    const stkName = stk ? ` (${stk.productName}) ` : ' ';
-    requestPinAuth(
-      'ပစ္စည်းအဝင် စာရင်းဖျက်ရန် အတည်ပြုပါ',
-      `ပစ္စည်းအဝင် စာရင်း${stkName}ကို စနစ်ထဲမှ လုံးဝဖျက်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
-      async () => {
-        const nextStock = stockInList.filter((s) => s.id !== id);
-        setStockInList(nextStock);
-        localStorage.setItem(`cs_pos_v5_stockin${suffix}`, JSON.stringify(nextStock));
-        try {
-          await deleteDoc(doc(db, 'users', encodedEmail, 'stockIn', id)).catch(err => {
-            handleFirestoreError(err, OperationType.DELETE, `users/${encodedEmail}/stockIn/${id}`);
-          });
-          showToast('ပစ္စည်းအဝင်စာရင်း ဖျက်ပြီးပါပြီ။');
-        } catch (err) {
-          console.error(err);
-        }
-      },
-      'delete'
-    );
+    const nextStock = stockInList.filter((s) => s.id !== id);
+    setStockInList(nextStock);
+    localStorage.setItem(`cs_pos_v5_stockin${suffix}`, JSON.stringify(nextStock));
+    try {
+      await deleteDoc(doc(db, 'users', encodedEmail, 'stockIn', id)).catch(err => {
+        handleFirestoreError(err, OperationType.DELETE, `users/${encodedEmail}/stockIn/${id}`);
+      });
+      showToast('ပစ္စည်းအဝင်စာရင်း ဖျက်ပြီးပါပြီ။');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Manual Waste Handler (Deducts quantity from stockIn item and records in wasteList)
@@ -472,26 +454,61 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
   };
 
   const handleDeleteWaste = async (id: string) => {
-    const wasteItem = wasteList.find((w) => w.id === id);
-    const wasteName = wasteItem ? ` (${wasteItem.productName}) ` : ' ';
-    requestPinAuth(
-      'Waste စာရင်းဖျက်ရန် အတည်ပြုပါ',
-      `Waste စာရင်း${wasteName}ကို စနစ်ထဲမှ လုံးဝဖျက်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
-      async () => {
-        const nextWaste = wasteList.filter((w) => w.id !== id);
-        setWasteList(nextWaste);
-        localStorage.setItem(`cs_pos_v5_waste${suffix}`, JSON.stringify(nextWaste));
+    const nowStr = new Date().toLocaleString('en-GB', { hour12: false });
+    const targetWaste = wasteList.find((w) => w.id === id);
+    let nextWasteList: WasteRecord[];
+
+    if (targetWaste) {
+      nextWasteList = wasteList.map((w) =>
+        w.id === id ? { ...w, isDeleted: true, deletedAt: nowStr } : w
+      );
+      try {
+        await updateDoc(doc(db, 'users', encodedEmail, 'waste', id), {
+          isDeleted: true,
+          deletedAt: nowStr,
+        }).catch((err) => {
+          handleFirestoreError(err, OperationType.UPDATE, `users/${encodedEmail}/waste/${id}`);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      // If deleting an expired stock record from the waste view
+      const stockIn = stockInList.find((s) => s.id === id);
+      if (stockIn) {
+        const archivedWaste: WasteRecord = {
+          id: `waste-del-${Date.now()}`,
+          stockInId: stockIn.id,
+          productCode: stockIn.productCode,
+          productName: stockIn.productName,
+          qty: stockIn.qty || 0,
+          purchasePrice: stockIn.purchasePrice || 0,
+          lossAmount: (stockIn.qty || 0) * (stockIn.purchasePrice || 0),
+          date: stockIn.date,
+          reason: 'သက်တမ်းလွန် စာရင်းမှ ဖျက်သိမ်းခြင်း',
+          type: 'Expired',
+          isDeleted: true,
+          deletedAt: nowStr,
+        };
+        nextWasteList = [archivedWaste, ...wasteList];
         try {
-          await deleteDoc(doc(db, 'users', encodedEmail, 'waste', id)).catch((err) => {
-            handleFirestoreError(err, OperationType.DELETE, `users/${encodedEmail}/waste/${id}`);
+          await setDoc(
+            doc(db, 'users', encodedEmail, 'waste', archivedWaste.id),
+            sanitizeForFirestore(archivedWaste)
+          ).catch((err) => {
+            handleFirestoreError(err, OperationType.CREATE, `users/${encodedEmail}/waste/${archivedWaste.id}`);
           });
-          showToast('Waste စာရင်း ဖျက်ပြီးပါပြီ။');
         } catch (err) {
           console.error(err);
         }
-      },
-      'delete'
-    );
+      } else {
+        nextWasteList = wasteList;
+      }
+    }
+
+    setWasteList(nextWasteList);
+    localStorage.setItem(`cs_pos_v5_waste${suffix}`, JSON.stringify(nextWasteList));
+    showToast('Waste စာရင်းကို ဖျက်ပြီး ဖျက်သိမ်းမှတ်တမ်းသို့ ထည့်သွင်းလိုက်ပါပြီ။');
   };
 
   // Sales handlers
@@ -510,64 +527,81 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
     }
   };
 
-  const handleDeleteSale = async (id: string) => {
+  const handleDeleteSale = async (id: string, reason?: string) => {
     const sale = salesList.find((s) => s.id === id);
-    const vNo = sale ? ` (ဘောင်ချာ ${sale.voucherNo}) ` : ' ';
-    requestPinAuth(
-      'အရောင်းမှတ်တမ်း ဖျက်ရန် အတည်ပြုပါ',
-      `အရောင်းမှတ်တမ်း${vNo}ကို စနစ်ထဲမှ လုံးဝဖျက်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
-      async () => {
-        const nextSales = salesList.filter((s) => s.id !== id);
-        setSalesList(nextSales);
-        localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(nextSales));
-        try {
-          await deleteDoc(doc(db, 'users', encodedEmail, 'sales', id)).catch(err => {
-            handleFirestoreError(err, OperationType.DELETE, `users/${encodedEmail}/sales/${id}`);
-          });
-          showToast('အရောင်းမှတ်တမ်း ဖျက်ပြီးပါပြီ။');
-        } catch (err) {
-          console.error(err);
-        }
-      },
-      'delete'
-    );
+    if (!sale) return;
+    if (sale.status === 'Refunded' || sale.status === 'Cancelled') {
+      showToast('ဖျက်သိမ်းပြီး/Refunded စာရင်းကို ထပ်မံဖျက်၍မရပါ။');
+      return;
+    }
+
+    const nowStr = new Date().toLocaleString('en-GB', { hour12: false });
+    const nextSales = salesList.map((s) => {
+      if (s.id === id) {
+        return {
+          ...s,
+          status: 'Cancelled' as const,
+          deletedAt: nowStr,
+          deleteReason: reason || 'ဘောင်ချာအား ဖျက်သိမ်းလိုက်သည်',
+        };
+      }
+      return s;
+    });
+
+    setSalesList(nextSales);
+    localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(nextSales));
+
+    try {
+      await updateDoc(doc(db, 'users', encodedEmail, 'sales', id), {
+        status: 'Cancelled',
+        deletedAt: nowStr,
+        deleteReason: reason || 'ဘောင်ချာအား ဖျက်သိမ်းလိုက်သည်',
+      }).catch(err => {
+        handleFirestoreError(err, OperationType.UPDATE, `users/${encodedEmail}/sales/${id}`);
+      });
+      showToast(`ဘောင်ချာ (${sale.voucherNo}) ကို ဖျက်သိမ်းစာရင်းသို့ ပြောင်းရွှေ့လိုက်ပါပြီ။`);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleRefundSale = async (id: string, reason?: string) => {
     const sale = salesList.find((s) => s.id === id);
-    const vNo = sale ? ` (ဘောင်ချာ ${sale.voucherNo}) ` : ' ';
-    requestPinAuth(
-      'အရောင်းဘောင်ချာ ပယ်ဖျက်/Refund ရန် အတည်ပြုပါ',
-      `အရောင်းဘောင်ချာ${vNo}ကို ပယ်ဖျက်/Refund ပြုလုပ်ရန် Security PIN ကို ထည့်သွင်းအတည်ပြုပေးပါ။`,
-      async () => {
-        const defReason = reason || 'မှားယွင်းရောင်းချမှု ပယ်ဖျက်ခြင်း/Refund ပြုလုပ်ခြင်း';
-        const nextSales = salesList.map((s) => {
-          if (s.id === id) {
-            return {
-              ...s,
-              status: 'Refunded' as const,
-              refundReason: defReason,
-            };
-          }
-          return s;
-        });
-        setSalesList(nextSales);
-        localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(nextSales));
+    if (!sale) return;
+    if (sale.status === 'Refunded' || sale.status === 'Cancelled') {
+      showToast('ဖျက်သိမ်းပြီး/Refunded စာရင်းဖြစ်သောကြောင့် ထပ်မံလုပ်ဆောင်၍မရပါ။');
+      return;
+    }
 
-        try {
-          await updateDoc(doc(db, 'users', encodedEmail, 'sales', id), {
-            status: 'Refunded',
-            refundReason: defReason,
-          }).catch(err => {
-            handleFirestoreError(err, OperationType.UPDATE, `users/${encodedEmail}/sales/${id}`);
-          });
-          showToast('အရောင်းဘောင်ချာကို Refund ပြုလုပ်ပြီး စတော့ပြန်လည်ဖြည့်သွင်းလိုက်ပါပြီ။');
-        } catch (err) {
-          console.error(err);
-        }
-      },
-      'delete'
-    );
+    const nowStr = new Date().toLocaleString('en-GB', { hour12: false });
+    const defReason = reason || 'မှားယွင်းရောင်းချမှု ပယ်ဖျက်ခြင်း/Refund ပြုလုပ်ခြင်း';
+    const nextSales = salesList.map((s) => {
+      if (s.id === id) {
+        return {
+          ...s,
+          status: 'Refunded' as const,
+          refundedAt: nowStr,
+          refundReason: defReason,
+        };
+      }
+      return s;
+    });
+
+    setSalesList(nextSales);
+    localStorage.setItem(`cs_pos_v5_sales${suffix}`, JSON.stringify(nextSales));
+
+    try {
+      await updateDoc(doc(db, 'users', encodedEmail, 'sales', id), {
+        status: 'Refunded',
+        refundedAt: nowStr,
+        refundReason: defReason,
+      }).catch(err => {
+        handleFirestoreError(err, OperationType.UPDATE, `users/${encodedEmail}/sales/${id}`);
+      });
+      showToast(`ဘောင်ချာ (${sale.voucherNo}) ကို Refund ပြုလုပ်ပြီးပါပြီ။`);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -623,7 +657,6 @@ function MainDashboard({ currentUser, onLogout }: MainDashboardProps) {
             onAddProduct={handleAddProduct}
             onUpdateProduct={handleUpdateProduct}
             onDeleteProduct={handleDeleteProduct}
-            onRequestPinAuth={requestPinAuth}
           />
         )}
 
