@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SaleRecord, TimePeriodFilter, Product, StockInRecord, ShopInfo, WasteRecord } from '../types';
 import { WasteTab } from './WasteTab';
-import { SettingsPinLock } from './SettingsPinLock';
 import {
   Calendar,
   Search,
@@ -13,7 +12,6 @@ import {
   Download,
   RotateCcw,
   Trash2,
-  Lock,
 } from 'lucide-react';
 
 interface ReportsTabProps {
@@ -45,20 +43,6 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
   onDeleteStockIn,
   onDeleteWaste,
 }) => {
-  const [pinLock, setPinLock] = useState<string | null>(null);
-  const [isUnlocked, setIsUnlocked] = useState(false);
-
-  useEffect(() => {
-    const savedPin = shopInfo?.settingsPin || '123456';
-    if (savedPin) {
-      setPinLock(savedPin);
-      setIsUnlocked(false);
-    } else {
-      setIsUnlocked(true);
-      setPinLock(null);
-    }
-  }, [shopInfo?.settingsPin]);
-
   const [reportType, setReportType] = useState<'sales' | 'waste'>('sales');
   const [periodFilter, setPeriodFilter] = useState<TimePeriodFilter>('today');
   const [startDate, setStartDate] = useState<string>('');
@@ -202,20 +186,6 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
       );
     }, 0);
 
-  if (!isUnlocked && pinLock) {
-    return (
-      <div className="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-xs max-w-md mx-auto my-8">
-        <SettingsPinLock
-          correctPin={pinLock}
-          accountPassword={accountPassword}
-          title="အရောင်းစာရင်း အစီရင်ခံစာ လုံခြုံရေး PIN"
-          description="အရောင်းမှတ်တမ်းနှင့် အစီရင်ခံစာများကို ဝင်ရောက်ကြည့်ရှုရန် Security PIN (သို့မဟုတ် Password) ရိုက်ထည့်ပေးပါ။"
-          onUnlock={() => setIsUnlocked(true)}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header Banner */}
@@ -273,16 +243,6 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
               <Download className="w-3.5 h-3.5 text-emerald-200" />
             </button>
           )}
-
-          <button
-            type="button"
-            onClick={() => setIsUnlocked(false)}
-            className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-slate-300 shadow-2xs"
-            title="အရောင်းစာရင်းကို ပြန်လည်ပိတ် (Lock) ထားမည်"
-          >
-            <Lock className="w-3.5 h-3.5 text-slate-600" />
-            <span>စာရင်းပြန်ပိတ်မည်</span>
-          </button>
         </div>
       </div>
 
