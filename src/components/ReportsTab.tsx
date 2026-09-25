@@ -153,6 +153,8 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
     );
 
   const totalCancelledSalesAmount = cancelledSales.reduce((sum, s) => sum + (s.grandTotal || 0), 0);
+  const totalDeletedWasteQty = deletedWaste.reduce((sum, w) => sum + (Number(w.qty) || 0), 0);
+  const totalDeletedWasteLoss = deletedWaste.reduce((sum, w) => sum + (Number(w.lossAmount) || 0), 0);
 
   // 3. Refunded Sales Metrics
   const refundedSalesList = salesList
@@ -436,10 +438,10 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
         </div>
 
-        {/* Secondary Filter Bar with 4 Options in Status Dropdown */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2.5 pt-2 border-t border-slate-100">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+        {/* Secondary Filter Bar with proper spacing and sizing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 pt-2.5 border-t border-slate-100 items-center">
+          <div className="relative min-w-0">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400 shrink-0" />
             <input
               type="text"
               placeholder="ဘောင်ချာ၊ ဝယ်သူအမည်..."
@@ -450,14 +452,14 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
 
           {/* Product Filter */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap shrink-0">
               အမျိုးအစား:
             </span>
             <select
               value={productFilter}
               onChange={(e) => setProductFilter(e.target.value)}
-              className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-medium text-slate-700"
+              className="flex-1 min-w-0 py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-medium text-slate-700"
             >
               <option value="All">အားလုံး</option>
               {products.map((p) => (
@@ -469,14 +471,14 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
 
           {/* Retail / Wholesale Filter */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap shrink-0">
               အရောင်းပုံစံ:
             </span>
             <select
               value={saleTypeFilter}
               onChange={(e) => setSaleTypeFilter(e.target.value)}
-              className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-semibold text-slate-700"
+              className="flex-1 min-w-0 py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500 font-semibold text-slate-700"
             >
               <option value="All">အားလုံး</option>
               <option value="Retail">လက်လီ</option>
@@ -485,15 +487,15 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
 
           {/* Start Date */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap shrink-0">
               Start date:
             </span>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className={`w-full py-1.5 px-2 bg-slate-50 border rounded-xl text-xs focus:outline-none font-medium ${
+              className={`flex-1 min-w-0 py-1.5 px-2 bg-slate-50 border rounded-xl text-xs focus:outline-none font-medium ${
                 startDate
                   ? 'border-indigo-500 bg-indigo-50/50 text-indigo-900 font-semibold'
                   : 'border-slate-200 text-slate-700 focus:border-indigo-500'
@@ -503,15 +505,15 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
 
           {/* End Date */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap shrink-0">
               End date:
             </span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className={`w-full py-1.5 px-2 bg-slate-50 border rounded-xl text-xs focus:outline-none font-medium ${
+              className={`flex-1 min-w-0 py-1.5 px-2 bg-slate-50 border rounded-xl text-xs focus:outline-none font-medium ${
                 endDate
                   ? 'border-indigo-500 bg-indigo-50/50 text-indigo-900 font-semibold'
                   : 'border-slate-200 text-slate-700 focus:border-indigo-500'
@@ -521,14 +523,14 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
 
           {/* Payment Filter */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap shrink-0">
               ငွေရှင်းပုံစံ:
             </span>
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className="w-full py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+              className="flex-1 min-w-0 py-2 px-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
             >
               <option value="All">အားလုံး</option>
               <option value="Cash">Cash</option>
@@ -538,14 +540,14 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
           </div>
 
           {/* Status Dropdown - 3 options: အားလုံး, Refunded, ဖျက်သိမ်း */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium whitespace-nowrap">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-xs text-slate-500 font-medium whitespace-nowrap shrink-0">
               အခြေအနေ:
             </span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className={`w-full py-2 px-2 border rounded-xl text-xs focus:outline-none font-bold ${
+              className={`flex-1 min-w-0 py-2 px-2 border rounded-xl text-xs focus:outline-none font-bold ${
                 statusFilter === 'Cancelled'
                   ? 'bg-rose-50 border-rose-300 text-rose-700'
                   : statusFilter === 'Refunded'
@@ -667,6 +669,19 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                     ))
                   )}
                 </tbody>
+                {cancelledSales.length > 0 && (
+                  <tfoot className="bg-rose-50/90 font-bold text-slate-900 border-t-2 border-rose-200 text-xs sm:text-sm">
+                    <tr>
+                      <td colSpan={5} className="py-3 px-4 text-right border-r border-slate-200">
+                        စုစုပေါင်း (Total):
+                      </td>
+                      <td className="py-3 px-3 text-right border-r border-slate-200 text-rose-700 font-bold">
+                        {totalCancelledSalesAmount.toLocaleString()} ကျပ်
+                      </td>
+                      <td className="py-3 px-4"></td>
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
           </div>
@@ -739,6 +754,22 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                     ))
                   )}
                 </tbody>
+                {deletedWaste.length > 0 && (
+                  <tfoot className="bg-amber-50/90 font-bold text-slate-900 border-t-2 border-amber-200 text-xs sm:text-sm">
+                    <tr>
+                      <td colSpan={5} className="py-3 px-4 text-right border-r border-slate-200">
+                        စုစုပေါင်း (Total):
+                      </td>
+                      <td className="py-3 px-3 text-right border-r border-slate-200 text-amber-900 font-bold">
+                        {totalDeletedWasteQty.toLocaleString()}
+                      </td>
+                      <td className="py-3 px-3 text-right border-r border-slate-200 text-rose-600 font-bold">
+                        {totalDeletedWasteLoss.toLocaleString()} ကျပ်
+                      </td>
+                      <td className="py-3 px-4"></td>
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
           </div>
@@ -859,6 +890,19 @@ export const ReportsTab: React.FC<ReportsTabProps> = ({
                     ))
                   )}
                 </tbody>
+                {refundedSalesList.length > 0 && (
+                  <tfoot className="bg-amber-50/90 font-bold text-slate-900 border-t-2 border-amber-200 text-xs sm:text-sm">
+                    <tr>
+                      <td colSpan={5} className="py-3 px-4 text-right border-r border-slate-200">
+                        စုစုပေါင်း (Total):
+                      </td>
+                      <td className="py-3 px-3 text-right border-r border-slate-200 text-rose-600 font-bold">
+                        {totalRefundedAmount.toLocaleString()} ကျပ်
+                      </td>
+                      <td colSpan={2} className="py-3 px-4"></td>
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
           </div>
